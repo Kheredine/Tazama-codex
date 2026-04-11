@@ -144,7 +144,7 @@ const goToDetail = (item) => {
         style="background: rgba(255,255,255,0.03);"
       >
         <div
-          class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 shadow-lg"
+          class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shrink-0 shadow-lg"
           :style="profile.user.plan === 'premium'
             ? 'background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 4px 24px rgba(217,119,6,0.3);'
             : 'background: linear-gradient(135deg, #5b21b6, #7c3aed); box-shadow: 0 4px 24px rgba(124,58,237,0.3);'"
@@ -184,7 +184,7 @@ const goToDetail = (item) => {
           </div>
         </div>
 
-        <div v-show="!isMe" class="flex-shrink-0 flex flex-col gap-2">
+        <div v-show="!isMe" class="shrink-0 flex flex-col gap-2">
           <button
             v-show="connectionStatus === 'none'"
             type="button"

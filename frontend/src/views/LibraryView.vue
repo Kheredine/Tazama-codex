@@ -298,7 +298,7 @@ const onTabChange = (tabId) => {
         v-for="tab in tabs"
         :key="tab.id"
         type="button"
-        class="flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition flex-shrink-0"
+        class="flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition shrink-0"
         :class="activeTab === tab.id ? 'text-white border-b-2 border-purple-500' : 'text-white/40 hover:text-white/70'"
         @click="onTabChange(tab.id)"
       >
@@ -374,12 +374,12 @@ const onTabChange = (tabId) => {
         :key="i"
         class="flex items-center gap-4 p-4 rounded-xl bg-white/3 hover:bg-white/5 transition"
       >
-        <i class="fa-solid fa-play-circle text-purple-400/60 text-lg flex-shrink-0"></i>
+        <i class="fa-solid fa-play-circle text-purple-400/60 text-lg shrink-0"></i>
         <div class="flex-1">
           <p class="text-white/80 text-sm font-medium">{{ entry.title }}</p>
           <p v-if="entry.platform" class="text-white/40 text-xs mt-0.5">{{ entry.platform }}</p>
         </div>
-        <span v-if="entry.addedAt" class="text-white/30 text-xs flex-shrink-0">
+        <span v-if="entry.addedAt" class="text-white/30 text-xs shrink-0">
           {{ new Date(entry.addedAt).toLocaleDateString() }}
         </span>
       </div>
@@ -407,7 +407,7 @@ const onTabChange = (tabId) => {
         >
           <!-- Playlist header -->
           <div class="flex items-center gap-3 p-4 cursor-pointer hover:bg-white/3 transition" @click="openPlaylist(pl)">
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
                  style="background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3);">
               🎬
             </div>
@@ -426,7 +426,7 @@ const onTabChange = (tabId) => {
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+            <div class="flex items-center gap-2 shrink-0" @click.stop>
               <!-- Share toggle -->
               <button
                 type="button"

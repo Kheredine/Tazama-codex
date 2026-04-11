@@ -119,7 +119,7 @@ const renderMarkdown = (text) => {
     <template v-else>
 
       <!-- Header -->
-      <div class="flex items-center justify-between px-1 pb-4 flex-shrink-0">
+      <div class="flex items-center justify-between px-1 pb-4 shrink-0">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: rgba(217,119,6,0.15); border: 1px solid rgba(245,158,11,0.3);">
             <i class="fa-solid fa-eye text-amber-400"></i>
@@ -161,7 +161,7 @@ const renderMarkdown = (text) => {
 
           <!-- Oracle -->
           <div v-else class="flex items-start gap-3">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
                  style="background: rgba(217,119,6,0.15); border: 1px solid rgba(245,158,11,0.25);">
               <i class="fa-solid fa-eye text-xs text-amber-400"></i>
             </div>
@@ -174,7 +174,7 @@ const renderMarkdown = (text) => {
 
         <!-- Typing indicator -->
         <div v-if="loading" class="flex items-start gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                style="background: rgba(217,119,6,0.15); border: 1px solid rgba(245,158,11,0.25);">
             <i class="fa-solid fa-eye text-xs text-amber-400"></i>
           </div>
@@ -190,7 +190,7 @@ const renderMarkdown = (text) => {
       </div>
 
       <!-- Input area -->
-      <div class="flex items-end gap-3 pt-4 flex-shrink-0">
+      <div class="flex items-end gap-3 pt-4 shrink-0">
         <div class="flex-1 flex items-end rounded-xl border border-white/10 overflow-hidden"
              style="background: rgba(255,255,255,0.05);">
           <textarea
@@ -206,7 +206,7 @@ const renderMarkdown = (text) => {
         <button
           @click="send"
           :disabled="!input.trim() || loading"
-          class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition"
+          class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition"
           :class="input.trim() && !loading
             ? 'cursor-pointer'
             : 'opacity-40 cursor-not-allowed'"

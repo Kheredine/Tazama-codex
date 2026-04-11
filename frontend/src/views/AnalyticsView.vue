@@ -124,14 +124,14 @@ const hasData = computed(() =>
           <h2 class="section-title">Top Moods</h2>
           <div class="flex flex-col gap-3 p-5 rounded-2xl border border-white/8" style="background: rgba(255,255,255,0.03);">
             <div v-for="entry in moodEntries" :key="entry.id" class="flex items-center gap-3">
-              <div class="text-xs text-white/50 w-24 capitalize truncate flex-shrink-0">{{ entry.id.replace(/-/g,' ') }}</div>
+              <div class="text-xs text-white/50 w-24 capitalize truncate shrink-0">{{ entry.id.replace(/-/g,' ') }}</div>
               <div class="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
                 <div
                   class="h-full rounded-full transition-all duration-700"
                   :style="{ width: entry.pct + '%', background: moodColor(entry.id) }"
                 ></div>
               </div>
-              <div class="text-xs text-white/40 w-8 text-right flex-shrink-0">{{ entry.count }}</div>
+              <div class="text-xs text-white/40 w-8 text-right shrink-0">{{ entry.count }}</div>
             </div>
           </div>
         </section>

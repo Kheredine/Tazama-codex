@@ -145,7 +145,7 @@ onUnmounted(() => clearInterval(unreadTimer))
   :class="scrolled ? 'backdrop-blur-2xl bg-[#0a0615]/80 border-b border-white/5' : 'bg-transparent'"
 >
   <!-- Left: hamburger + language toggle -->
-  <div class="flex items-center gap-2 flex-shrink-0">
+  <div class="flex items-center gap-2 shrink-0">
     <button
       type="button"
       class="md:hidden flex items-center justify-center w-11 h-11 rounded-xl bg-[#7C3AED]/20 text-white/70 hover:text-white transition"
@@ -174,7 +174,7 @@ onUnmounted(() => clearInterval(unreadTimer))
         class="flex items-center gap-2.5 px-4 h-11 rounded-xl bg-[#7C3AED]/20 backdrop-blur-md transition-all"
         :style="searchActive ? 'box-shadow: 0 0 0 1px rgba(124,58,237,0.45);' : ''"
       >
-        <i class="fa-solid fa-magnifying-glass text-white/35 text-sm flex-shrink-0"></i>
+        <i class="fa-solid fa-magnifying-glass text-white/35 text-sm shrink-0"></i>
 
         <input
           v-model="query"
@@ -192,14 +192,14 @@ onUnmounted(() => clearInterval(unreadTimer))
 
         <!-- Spinner (absolutely positioned inside bar so it doesn't shift layout) -->
         <i
-          class="fa-solid fa-circle-notch fa-spin text-white/35 text-xs flex-shrink-0 transition-opacity"
+          class="fa-solid fa-circle-notch fa-spin text-white/35 text-xs shrink-0 transition-opacity"
           :style="searching ? 'opacity:1' : 'opacity:0; pointer-events:none'"
         ></i>
 
         <!-- Clear button -->
         <button
           type="button"
-          class="flex-shrink-0 text-white/30 hover:text-white/70 transition"
+          class="shrink-0 text-white/30 hover:text-white/70 transition"
           :style="query ? 'opacity:1' : 'opacity:0; pointer-events:none'"
           @pointerdown.stop
           @click.stop="closeSearch"
@@ -251,7 +251,7 @@ onUnmounted(() => clearInterval(unreadTimer))
             class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition text-left"
             @click.stop="goToTitle(item)"
           >
-            <div class="w-9 h-[52px] rounded-lg overflow-hidden flex-shrink-0 bg-white/5 flex items-center justify-center">
+            <div class="w-9 h-13 rounded-lg overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
               <img v-if="item.poster" :src="item.poster" :alt="item.title" class="w-full h-full object-cover" />
               <i v-else class="fa-solid fa-film text-white/15 text-xs"></i>
             </div>
@@ -267,7 +267,7 @@ onUnmounted(() => clearInterval(unreadTimer))
                 </span>
               </p>
             </div>
-            <i class="fa-solid fa-arrow-right text-[10px] text-white/15 flex-shrink-0"></i>
+            <i class="fa-solid fa-arrow-right text-[10px] text-white/15 shrink-0"></i>
           </button>
         </div>
 
@@ -292,14 +292,14 @@ onUnmounted(() => clearInterval(unreadTimer))
             @click.stop="goToUser(u)"
           >
             <div
-              class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center text-lg"
+              class="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-lg"
               style="background: rgba(124,58,237,0.4);"
             >{{ u.avatar || '🎬' }}</div>
             <div class="flex-1 min-w-0">
               <p class="text-white text-sm font-medium truncate">{{ u.username }}</p>
               <p class="text-white/35 text-xs mt-0.5">{{ u.plan === 'premium' ? '✦ Premium' : 'Standard' }}</p>
             </div>
-            <i class="fa-solid fa-arrow-right text-[10px] text-white/15 flex-shrink-0"></i>
+            <i class="fa-solid fa-arrow-right text-[10px] text-white/15 shrink-0"></i>
           </button>
         </div>
 
@@ -311,7 +311,7 @@ onUnmounted(() => clearInterval(unreadTimer))
   </div>
 
   <!-- Right: bell + profile -->
-  <div class="flex items-center gap-2 flex-shrink-0">
+  <div class="flex items-center gap-2 shrink-0">
 
     <!-- Notification bell -->
     <button
@@ -322,7 +322,7 @@ onUnmounted(() => clearInterval(unreadTimer))
       <i class="fa-solid fa-bell text-base"></i>
       <!-- badge: opacity toggle avoids DOM insert/remove -->
       <span
-        class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] rounded-full text-[9px] font-bold flex items-center justify-center px-1 transition-opacity"
+        class="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 rounded-full text-[9px] font-bold flex items-center justify-center px-1 transition-opacity"
         style="background:#ef4444; color:white;"
         :style="unreadCount > 0 ? 'opacity:1' : 'opacity:0; pointer-events:none'"
       >{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
@@ -338,7 +338,7 @@ onUnmounted(() => clearInterval(unreadTimer))
       @click="router.push('/settings')"
     >
       <div
-        class="w-7 h-7 rounded-lg flex items-center justify-center text-sm flex-shrink-0"
+        class="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
         :style="isPremium
           ? 'background: linear-gradient(135deg,#d97706,#f59e0b);'
           : 'background: rgba(124,58,237,0.55);'"

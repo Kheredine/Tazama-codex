@@ -155,7 +155,7 @@ onMounted(() => {
           @click="goDetail(rec)"
         >
           <!-- Poster -->
-          <div class="relative w-full h-64 flex-shrink-0 overflow-hidden" style="background:#12121A">
+          <div class="relative w-full h-64 shrink-0 overflow-hidden" style="background:#12121A">
             <img
               v-if="rec.poster"
               :src="rec.poster"

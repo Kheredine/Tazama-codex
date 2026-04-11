@@ -140,7 +140,7 @@ const faqs = [
       <!-- Contact note -->
       <div class="p-4 rounded-xl border border-purple-500/20 flex items-start gap-3"
            style="background: rgba(124,58,237,0.06);">
-        <i class="fa-solid fa-envelope text-purple-400/60 mt-0.5 flex-shrink-0"></i>
+        <i class="fa-solid fa-envelope text-purple-400/60 mt-0.5 shrink-0"></i>
         <p class="text-white/50 text-sm">
           Still need help? Use the <button type="button" class="text-purple-400 hover:text-purple-300 transition underline underline-offset-2" @click="activeTab = 'feedback'">Feedback tab</button> to contact the Tazama team directly.
         </p>

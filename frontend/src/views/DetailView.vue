@@ -294,7 +294,7 @@ const saveToPlaylist = async (playlist) => {
       <!-- Main info row -->
       <div class="flex flex-col md:flex-row gap-8 mb-10 -mt-24 relative px-2">
         <!-- Poster -->
-        <div class="flex-shrink-0 w-36 md:w-48 mx-auto md:mx-0">
+        <div class="shrink-0 w-36 md:w-48 mx-auto md:mx-0">
           <img v-if="poster" :src="poster" :alt="title" class="w-full rounded-xl shadow-2xl" />
           <div v-else class="w-full aspect-[2/3] rounded-xl bg-white/5 flex items-center justify-center">
             <i class="fa-solid fa-film text-white/20 text-4xl"></i>
@@ -402,7 +402,7 @@ const saveToPlaylist = async (playlist) => {
           <div
             v-for="actor in cast"
             :key="actor.id"
-            class="flex-shrink-0 flex flex-col items-center gap-2 w-20"
+            class="shrink-0 flex flex-col items-center gap-2 w-20"
           >
             <img
               v-if="actor.profile_path"

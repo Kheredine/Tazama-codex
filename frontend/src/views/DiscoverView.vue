@@ -178,7 +178,7 @@ onMounted(() => {
 
       <!-- Not enough data yet -->
       <div v-if="!hasEnoughData" class="flex items-start gap-4 p-5 rounded-2xl" style="background:rgba(124,58,237,0.08); border:1px solid rgba(124,58,237,0.2)">
-        <i class="fa-solid fa-seedling text-purple-400 text-xl mt-0.5 flex-shrink-0"></i>
+        <i class="fa-solid fa-seedling text-purple-400 text-xl mt-0.5 shrink-0"></i>
         <div>
           <p class="text-white/70 text-sm font-medium mb-1">{{ lang === 'fr' ? 'Utilisez l\'Oracle quelques fois pour débloquer cette section' : 'Use the Oracle a few times to unlock this section' }}</p>
           <p style="color:rgba(255,255,255,0.38)" class="text-xs leading-relaxed">

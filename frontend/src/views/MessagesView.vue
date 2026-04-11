@@ -112,15 +112,15 @@ onUnmounted(() => {
 <template>
   <div class="flex flex-col gap-4 pb-4" style="height: calc(100vh - 8rem); min-height: 400px;">
 
-    <h1 class="text-2xl font-bold text-white flex-shrink-0">Messages</h1>
+    <h1 class="text-2xl font-bold text-white shrink-0">Messages</h1>
 
     <div class="flex gap-4 flex-1 overflow-hidden">
 
       <!-- ── Sidebar: conversations list ─────────────────────────────────── -->
-      <div class="w-64 flex-shrink-0 flex flex-col rounded-2xl border border-white/8 overflow-hidden"
+      <div class="w-64 shrink-0 flex flex-col rounded-2xl border border-white/8 overflow-hidden"
            style="background: rgba(255,255,255,0.025);">
 
-        <div class="px-4 py-3 border-b border-white/8 flex-shrink-0">
+        <div class="px-4 py-3 border-b border-white/8 shrink-0">
           <p class="text-xs font-semibold text-white/40 uppercase tracking-wider">Reel Mate Chats</p>
         </div>
 
@@ -148,7 +148,7 @@ onUnmounted(() => {
               : 'background: transparent;'"
             @click="openThread(conv.userId)"
           >
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
                  :style="conv.plan === 'premium'
                    ? 'background: linear-gradient(135deg, #d97706, #f59e0b);'
                    : 'background: linear-gradient(135deg, #5b21b6, #7c3aed);'">
@@ -158,7 +158,7 @@ onUnmounted(() => {
               <div class="flex items-center justify-between gap-1">
                 <p class="text-white text-sm font-semibold truncate">{{ conv.username }}</p>
                 <span v-show="conv.unread > 0"
-                      class="text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      class="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                       style="background: #7c3aed; color: white;">
                   {{ conv.unread }}
                 </span>
@@ -184,9 +184,9 @@ onUnmounted(() => {
         <!-- Active thread -->
         <template v-if="activeUserId">
           <!-- Header -->
-          <div class="flex items-center gap-3 px-5 py-3 border-b border-white/8 flex-shrink-0"
+          <div class="flex items-center gap-3 px-5 py-3 border-b border-white/8 shrink-0"
                style="background: rgba(255,255,255,0.02);">
-            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
                  :style="activeConv?.plan === 'premium'
                    ? 'background: linear-gradient(135deg, #d97706, #f59e0b);'
                    : 'background: linear-gradient(135deg, #5b21b6, #7c3aed);'">
@@ -232,7 +232,7 @@ onUnmounted(() => {
           </div>
 
           <!-- Input area -->
-          <div class="flex items-end gap-3 p-4 border-t border-white/8 flex-shrink-0">
+          <div class="flex items-end gap-3 p-4 border-t border-white/8 shrink-0">
             <textarea
               v-model="newMessage"
               rows="1"
@@ -243,7 +243,7 @@ onUnmounted(() => {
             ></textarea>
             <button
               type="button"
-              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition"
+              class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition"
               :style="newMessage.trim()
                 ? 'background: linear-gradient(135deg, #5b21b6, #7c3aed); color: white;'
                 : 'background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.25);'"

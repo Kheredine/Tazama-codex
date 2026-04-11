@@ -106,7 +106,7 @@ onMounted(() => {
           style="background: rgba(124,58,237,0.06);"
         >
           <div
-            class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+            class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
             :style="req.plan === 'premium'
               ? 'background: linear-gradient(135deg, #d97706, #f59e0b);'
               : 'background: linear-gradient(135deg, #5b21b6, #7c3aed);'"
@@ -119,7 +119,7 @@ onMounted(() => {
             <p class="text-white/40 text-xs mt-0.5">Wants to be your Reel Mate.</p>
           </div>
 
-          <div class="flex gap-2 flex-shrink-0">
+          <div class="flex gap-2 shrink-0">
             <button
               type="button"
               class="px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-1.5"
@@ -187,7 +187,7 @@ onMounted(() => {
         >
           <div class="flex items-center gap-3 px-5 py-4 border-b border-white/6">
             <div
-              class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+              class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
               :style="pl.plan === 'premium'
                 ? 'background: linear-gradient(135deg, #d97706, #f59e0b);'
                 : 'background: linear-gradient(135deg, #5b21b6, #7c3aed);'"

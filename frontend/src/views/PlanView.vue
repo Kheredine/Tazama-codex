@@ -60,7 +60,7 @@ const premiumFeatures = [
 
         <ul class="flex flex-col gap-3 flex-1">
           <li v-for="f in standardFeatures" :key="f.label" class="feature-item">
-            <i :class="`fa-solid ${f.icon}`" class="text-purple-400 w-5 text-center flex-shrink-0"></i>
+            <i :class="`fa-solid ${f.icon}`" class="text-purple-400 w-5 text-center shrink-0"></i>
             <span class="text-white/80 text-sm">{{ f.label }}</span>
           </li>
         </ul>
@@ -97,7 +97,7 @@ const premiumFeatures = [
 
         <ul class="flex flex-col gap-3 flex-1">
           <li v-for="f in premiumFeatures" :key="f.label" class="feature-item">
-            <i :class="`fa-solid ${f.icon}`" class="text-amber-400 w-5 text-center flex-shrink-0"></i>
+            <i :class="`fa-solid ${f.icon}`" class="text-amber-400 w-5 text-center shrink-0"></i>
             <span class="text-white/80 text-sm">{{ f.label }}</span>
           </li>
         </ul>

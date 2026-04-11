@@ -85,7 +85,7 @@ const goToProfile = (fromUserId) => {
       >
         <!-- From avatar -->
         <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+          class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg"
           style="background: rgba(124,58,237,0.25);"
         >
           {{ n.from_avatar || '🎬' }}
@@ -101,7 +101,7 @@ const goToProfile = (fromUserId) => {
         </div>
 
         <!-- Unread dot -->
-        <div v-if="!n.is_read" class="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0 mt-1.5"></div>
+        <div v-if="!n.is_read" class="w-2 h-2 rounded-full bg-purple-400 shrink-0 mt-1.5"></div>
       </div>
     </div>
 

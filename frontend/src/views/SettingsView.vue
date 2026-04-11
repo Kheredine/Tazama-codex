@@ -209,7 +209,7 @@ const memberSince = computed(() => {
 
       <!-- Avatar (emoji) -->
       <div
-        class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0 shadow-lg select-none"
+        class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shrink-0 shadow-lg select-none"
         :style="isPremium
           ? 'background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 4px 24px rgba(217,119,6,0.35);'
           : 'background: linear-gradient(135deg, #5b21b6, #7c3aed); box-shadow: 0 4px 24px rgba(124,58,237,0.35);'"
@@ -251,7 +251,7 @@ const memberSince = computed(() => {
       <!-- Edit button -->
       <button
         type="button"
-        class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition border"
+        class="shrink-0 px-4 py-2 rounded-xl text-xs font-semibold transition border"
         :class="editing
           ? 'bg-white/5 text-white/50 border-white/10'
           : 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 border-purple-600/25'"
@@ -309,7 +309,7 @@ const memberSince = computed(() => {
           style="background: rgba(255,255,255,0.03);"
           @click="$router.push(`/profile/${mate.id}`)"
         >
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
                :style="mate.plan === 'premium'
                  ? 'background: linear-gradient(135deg, #d97706, #f59e0b);'
                  : 'background: linear-gradient(135deg, #5b21b6, #7c3aed);'">
@@ -319,7 +319,7 @@ const memberSince = computed(() => {
             <p class="text-white text-sm font-semibold">{{ mate.username }}</p>
             <p v-show="mate.watcher_title" class="text-purple-400/60 text-xs">🎬 {{ mate.watcher_title }}</p>
           </div>
-          <i class="fa-solid fa-chevron-right text-white/20 text-xs flex-shrink-0"></i>
+          <i class="fa-solid fa-chevron-right text-white/20 text-xs shrink-0"></i>
         </div>
       </div>
     </div>
@@ -379,7 +379,7 @@ const memberSince = computed(() => {
         <button
           v-if="!isPremium"
           type="button"
-          class="relative w-12 h-6 rounded-full flex-shrink-0 cursor-not-allowed opacity-60"
+          class="relative w-12 h-6 rounded-full shrink-0 cursor-not-allowed opacity-60"
           style="background: #7c3aed;"
           disabled
         >
@@ -392,7 +392,7 @@ const memberSince = computed(() => {
         <button
           v-else
           type="button"
-          class="relative w-12 h-6 rounded-full flex-shrink-0 cursor-pointer"
+          class="relative w-12 h-6 rounded-full shrink-0 cursor-pointer"
           style="transition: background 0.2s;"
           :style="editForm.is_discoverable
             ? 'background: #7c3aed;'
@@ -577,7 +577,7 @@ const memberSince = computed(() => {
           <ul class="flex flex-col gap-2">
             <li v-for="fact in title.funFacts" :key="fact"
                 class="flex items-start gap-2 text-sm text-white/60">
-              <i class="fa-solid fa-eye text-amber-400/60 text-xs mt-1 flex-shrink-0"></i>
+              <i class="fa-solid fa-eye text-amber-400/60 text-xs mt-1 shrink-0"></i>
               {{ fact }}
             </li>
           </ul>
