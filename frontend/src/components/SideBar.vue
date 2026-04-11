@@ -1,12 +1,12 @@
 <script setup>
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import { useI18n } from '@/composables/useI18n'
 import { useAuth } from '@/composables/useAuth'
 
 defineProps({ open: Boolean })
 defineEmits(['close'])
 
-const { t } = useI18n()
+const { t, lang, toggleLang } = useI18n()
 const { isPremium } = useAuth()
 </script>
 
@@ -18,10 +18,22 @@ const { isPremium } = useAuth()
   >
     <!-- Brand -->
     <div class="px-6 pt-7 pb-5">
-      <RouterLink to="/" class="flex items-center gap-3" @click="$emit('close')">
+      <div class="flex items-center justify-between gap-3">
+        <RouterLink to="/" class="flex items-center gap-3 min-w-0" @click="$emit('close')">
           <img src="/logo_tazama.png" alt="Tazama Logo" class="w-8 h-8">
-        <span class="font-logo text-2xl font-bold text-white tracking-tight">Tazama</span>
-      </RouterLink>
+          <span class="font-logo text-2xl font-bold text-white tracking-tight">Tazama</span>
+        </RouterLink>
+
+        <button
+          type="button"
+          class="md:hidden flex items-center gap-1.5 px-3 h-10 rounded-xl bg-[#7C3AED]/20 text-white/70 hover:text-white text-sm font-semibold transition shrink-0"
+          @click="toggleLang"
+          :title="lang === 'en' ? 'Passer en franÃ§ais' : 'Switch to English'"
+        >
+          <i class="fa-solid fa-globe text-xs"></i>
+          <span>{{ lang === 'en' ? 'FR' : 'EN' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- Nav -->
@@ -46,6 +58,11 @@ const { isPremium } = useAuth()
       <RouterLink to="/social" active-class="sidebar-active" class="sidebar-link" @click="$emit('close')">
         <i class="fa-solid fa-users text-base w-5 text-center"></i>
         <span>{{ t.navSocial }}</span>
+      </RouterLink>
+
+      <RouterLink to="/notifications" active-class="sidebar-active" class="sidebar-link md:hidden" @click="$emit('close')">
+        <i class="fa-solid fa-bell text-base w-5 text-center"></i>
+        <span>Notifications</span>
       </RouterLink>
 
       <!-- Divider -->
