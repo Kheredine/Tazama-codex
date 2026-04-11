@@ -1,0 +1,781 @@
+{
+  "version": "2.0.0",
+  "moods": [
+    {
+      "id": "emotional-release",
+      "emoji": "😔",
+      "mood": "Emotional Release",
+      "description": "You want to feel something deep. Sad stories, real tears, genuine human emotion — the kind of watching that leaves you drained but lighter.",
+      "timeOfDay": ["evening", "night"],
+      "minRuntime": 80,
+      "maxRuntime": 180,
+      "subMoods": [
+        {
+          "id": "cry-productively",
+          "label": "I want to cry — and feel better after",
+          "description": "A moving story that earns every tear. Not cheap or manipulative — just deeply human. You'll feel emotionally wrung out in the best way possible.",
+          "tags": ["drama", "grief", "family", "loss", "emotional"],
+          "examples": [
+            { "title": "Aftersun", "type": "movie", "year": 2022 },
+            { "title": "Manchester by the Sea", "type": "movie", "year": 2016 },
+            { "title": "This Is Us", "type": "series", "year": 2016 },
+            { "title": "A Silent Voice", "type": "anime", "year": 2016 },
+            { "title": "13th", "type": "documentary", "year": 2016 }
+          ]
+        },
+        {
+          "id": "beautifully-sad",
+          "label": "Sad but beautiful — not depressing",
+          "description": "Melancholic stories that feel more like a bittersweet song than a gut punch. You leave feeling moved, not destroyed. Think quiet longing, not hopeless darkness.",
+          "tags": ["melancholic", "quiet", "bittersweet", "slow-cinema"],
+          "examples": [
+            { "title": "Past Lives", "type": "movie", "year": 2023 },
+            { "title": "Her", "type": "movie", "year": 2013 },
+            { "title": "Normal People", "type": "series", "year": 2020 },
+            { "title": "Your Lie in April", "type": "anime", "year": 2014 },
+            { "title": "Jiro Dreams of Sushi", "type": "documentary", "year": 2011 }
+          ]
+        },
+        {
+          "id": "quiet-grief",
+          "label": "Grief handled with restraint — no drama",
+          "description": "Loss shown as it actually feels — quiet, heavy, and slow. No big crying scenes, no dramatic music. Just honest, understated stories about people carrying something hard.",
+          "tags": ["grief", "restraint", "realism", "drama"],
+          "examples": [
+            { "title": "The Rider", "type": "movie", "year": 2017 },
+            { "title": "Ordinary People", "type": "movie", "year": 1980 },
+            { "title": "The Leftovers", "type": "series", "year": 2014 },
+            { "title": "Grave of the Fireflies", "type": "anime", "year": 1988 },
+            { "title": "32 Pills: My Sister's Suicide", "type": "documentary", "year": 2016 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tense-unsettling",
+      "emoji": "😨",
+      "mood": "Tense & Unsettling",
+      "description": "Something feels deeply wrong, but you can't quite explain why. Psychological discomfort, slow dread, and an atmosphere that sticks with you long after it ends.",
+      "timeOfDay": ["evening", "night"],
+      "minRuntime": 80,
+      "maxRuntime": 160,
+      "subMoods": [
+        {
+          "id": "unsettled-not-scared",
+          "label": "Unsettled but not scared — something feels off",
+          "description": "No jump scares, no gore. Just a growing sense that something is wrong you can't put your finger on. The film gets under your skin quietly and stays there for days.",
+          "tags": ["psychological", "atmospheric", "slow-burn", "surreal"],
+          "examples": [
+            { "title": "Hereditary", "type": "movie", "year": 2018 },
+            { "title": "The Others", "type": "movie", "year": 2001 },
+            { "title": "The Haunting of Hill House", "type": "series", "year": 2018 },
+            { "title": "Serial Experiments Lain", "type": "anime", "year": 1998 },
+            { "title": "The Act of Killing", "type": "documentary", "year": 2012 }
+          ]
+        },
+        {
+          "id": "paranoid-slow-burn",
+          "label": "Paranoid thriller — tension that builds slowly",
+          "description": "You won't notice how tense you are until you realize you've been holding your breath. Conspiracies, characters you can't fully trust, and a sense that something is about to snap.",
+          "tags": ["paranoia", "thriller", "slow-burn", "suspense"],
+          "examples": [
+            { "title": "Prisoners", "type": "movie", "year": 2013 },
+            { "title": "Rosemary's Baby", "type": "movie", "year": 1968 },
+            { "title": "Severance", "type": "series", "year": 2022 },
+            { "title": "Paranoia Agent", "type": "anime", "year": 2004 },
+            { "title": "The Imposter", "type": "documentary", "year": 2012 }
+          ]
+        },
+        {
+          "id": "dread-builds-quietly",
+          "label": "Pure dread — doom that compounds scene by scene",
+          "description": "No explosions, no monsters chasing anyone. Just an unbearable sense of wrongness that gets heavier with every scene. You know it's going to end badly. You can't stop watching.",
+          "tags": ["dread", "horror", "atmospheric", "psychological"],
+          "examples": [
+            { "title": "Midsommar", "type": "movie", "year": 2019 },
+            { "title": "The Zone of Interest", "type": "movie", "year": 2023 },
+            { "title": "Squid Game", "type": "series", "year": 2021 },
+            { "title": "Made in Abyss", "type": "anime", "year": 2017 },
+            { "title": "Icarus", "type": "documentary", "year": 2017 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "high-adrenaline",
+      "emoji": "⚡",
+      "mood": "High Adrenaline",
+      "description": "Your heart rate goes up and stays up. Action, danger, horror, and high-stakes situations that keep you locked in from start to finish. Not subtle — intense.",
+      "timeOfDay": ["afternoon", "evening", "night"],
+      "minRuntime": 60,
+      "maxRuntime": 180,
+      "subMoods": [
+        {
+          "id": "pure-action-mayhem",
+          "label": "Non-stop action — fights, chases, explosions",
+          "description": "Full throttle from minute one. You're here for movement, impact, and spectacle. Choreographed fights, insane chases, things blowing up. Your brain rests, your pulse doesn't.",
+          "tags": ["action", "fast-paced", "fights", "spectacle", "blockbuster"],
+          "examples": [
+            { "title": "Mad Max: Fury Road", "type": "movie", "year": 2015 },
+            { "title": "The Raid", "type": "movie", "year": 2011 },
+            { "title": "Squid Game", "type": "series", "year": 2021 },
+            { "title": "Demon Slayer", "type": "anime", "year": 2019 },
+            { "title": "Free Solo", "type": "documentary", "year": 2018 }
+          ]
+        },
+        {
+          "id": "survival-against-odds",
+          "label": "Survival story — one person against impossible odds",
+          "description": "A character in a situation with no good options. Claustrophobic, relentless, desperate. You're not sure they make it out — and you genuinely care whether they do.",
+          "tags": ["survival", "thriller", "tension", "one-vs-all", "intense"],
+          "examples": [
+            { "title": "1917", "type": "movie", "year": 2019 },
+            { "title": "Bone Tomahawk", "type": "movie", "year": 2015 },
+            { "title": "The Walking Dead", "type": "series", "year": 2010 },
+            { "title": "Attack on Titan", "type": "anime", "year": 2013 },
+            { "title": "14 Peaks: Nothing Is Impossible", "type": "documentary", "year": 2021 }
+          ]
+        },
+        {
+          "id": "jump-scares-horror",
+          "label": "Classic horror — monsters, jump scares, things in the dark",
+          "description": "You want to scream out loud. Haunted houses, creatures, things that go wrong fast. This is not subtle psychological dread — this is designed to make you flinch, gasp, and check your closet after.",
+          "tags": ["horror", "jump-scares", "monsters", "scary", "haunted"],
+          "examples": [
+            { "title": "The Conjuring", "type": "movie", "year": 2013 },
+            { "title": "Sinister", "type": "movie", "year": 2012 },
+            { "title": "The Haunting of Bly Manor", "type": "series", "year": 2020 },
+            { "title": "Another", "type": "anime", "year": 2012 },
+            { "title": "Cropsey", "type": "documentary", "year": 2009 }
+          ]
+        },
+        {
+          "id": "heist-and-schemes",
+          "label": "Heist or scheme — a brilliant plan executed under pressure",
+          "description": "The thrill is mental. A group with a plan so intricate you can barely follow it — and then the payoff when it comes together (or spectacularly falls apart). Fast-talking, tightly plotted, very rewatchable.",
+          "tags": ["heist", "thriller", "clever", "crime", "strategy"],
+          "examples": [
+            { "title": "Heat", "type": "movie", "year": 1995 },
+            { "title": "Parasite", "type": "movie", "year": 2019 },
+            { "title": "Money Heist", "type": "series", "year": 2017 },
+            { "title": "Lupin III", "type": "anime", "year": 1971 },
+            { "title": "The Two Escobars", "type": "documentary", "year": 2010 }
+          ]
+        },
+        {
+          "id": "combat-and-war",
+          "label": "War and combat — brutal, real, no glory",
+          "description": "War shown without a hero soundtrack. The violence is physical and the decisions are impossible. You feel the weight of every scene. Hits completely differently from regular action movies.",
+          "tags": ["war", "combat", "brutal", "military", "historical"],
+          "examples": [
+            { "title": "Dunkirk", "type": "movie", "year": 2017 },
+            { "title": "Hacksaw Ridge", "type": "movie", "year": 2016 },
+            { "title": "Band of Brothers", "type": "series", "year": 2001 },
+            { "title": "The Cockpit", "type": "anime", "year": 1993 },
+            { "title": "Restrepo", "type": "documentary", "year": 2010 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "light-fun",
+      "emoji": "😂",
+      "mood": "Light & Fun",
+      "description": "No heavy themes, no big emotional investment required. Just enjoyable, entertaining content that puts you in a good mood or makes you laugh out loud.",
+      "timeOfDay": ["morning", "afternoon", "evening", "night"],
+      "minRuntime": 20,
+      "maxRuntime": 130,
+      "subMoods": [
+        {
+          "id": "laugh-without-thinking",
+          "label": "Pure comedy — just laugh, no effort needed",
+          "description": "Warm, broad, easy humor. You don't need to pay close attention. It works whether you're fully in or half-distracted. Light, funny, and leaves you in a better mood than when you started.",
+          "tags": ["comedy", "feel-good", "light", "easy-watch"],
+          "examples": [
+            { "title": "What We Do in the Shadows", "type": "movie", "year": 2014 },
+            { "title": "Abbott Elementary", "type": "series", "year": 2021 },
+            { "title": "Schitt's Creek", "type": "series", "year": 2015 },
+            { "title": "Nichijou", "type": "anime", "year": 2011 },
+            { "title": "The Last Movie Star", "type": "documentary", "year": 2017 }
+          ]
+        },
+        {
+          "id": "dark-comedy-dry-wit",
+          "label": "Dark comedy — jokes that make you feel a little guilty for laughing",
+          "description": "Smart, subversive humor with a sharp edge. The jokes land harder because they're about something real. You'll laugh, then think about why you laughed. Clever writing, uncomfortable truths.",
+          "tags": ["dark-comedy", "satire", "clever", "dry-humor"],
+          "examples": [
+            { "title": "In Bruges", "type": "movie", "year": 2008 },
+            { "title": "The Favourite", "type": "movie", "year": 2018 },
+            { "title": "Barry", "type": "series", "year": 2018 },
+            { "title": "Sayonara, Zetsubou-Sensei", "type": "anime", "year": 2007 },
+            { "title": "Tickled", "type": "documentary", "year": 2016 }
+          ]
+        },
+        {
+          "id": "chaotic-energetic",
+          "label": "Chaotic and high energy — unpredictable from start to finish",
+          "description": "Fast, loud, and all over the place in the best way. You have no idea what happens next and that is the entire point. High energy from the first scene, never slows down.",
+          "tags": ["action", "comedy", "fast-paced", "energetic"],
+          "examples": [
+            { "title": "Everything Everywhere All at Once", "type": "movie", "year": 2022 },
+            { "title": "Scott Pilgrim vs. the World", "type": "movie", "year": 2010 },
+            { "title": "It's Always Sunny in Philadelphia", "type": "series", "year": 2005 },
+            { "title": "FLCL", "type": "anime", "year": 2000 },
+            { "title": "Shut Up & Sing", "type": "documentary", "year": 2006 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mind-ideas",
+      "emoji": "🤯",
+      "mood": "Mind & Ideas",
+      "description": "You want to think. Films that challenge how you see the world, play with structure and logic, or explore ideas big enough to discuss for hours afterward.",
+      "timeOfDay": ["afternoon", "evening"],
+      "minRuntime": 90,
+      "maxRuntime": 200,
+      "subMoods": [
+        {
+          "id": "mind-bending",
+          "label": "Mind-bending — complex structure, multiple layers, needs a second watch",
+          "description": "Films built to be puzzled over. Non-linear timelines, unreliable narrators, ideas that only fully land after the credits. You will want to talk about it immediately after — or watch it again.",
+          "tags": ["mind-bending", "complex", "sci-fi", "philosophical"],
+          "examples": [
+            { "title": "Primer", "type": "movie", "year": 2004 },
+            { "title": "Synecdoche, New York", "type": "movie", "year": 2008 },
+            { "title": "Dark", "type": "series", "year": 2017 },
+            { "title": "Neon Genesis Evangelion", "type": "anime", "year": 1995 },
+            { "title": "HyperNormalisation", "type": "documentary", "year": 2016 }
+          ]
+        },
+        {
+          "id": "surreal-dreamlike",
+          "label": "Surreal and dreamlike — images and feelings over plot",
+          "description": "Logic is not the point here. You experience these films more than you understand them. Symbols, textures, and atmosphere matter more than story. Strange, hypnotic, and unlike anything else.",
+          "tags": ["surreal", "art-house", "dreamlike", "experimental"],
+          "examples": [
+            { "title": "Mulholland Drive", "type": "movie", "year": 2001 },
+            { "title": "The Holy Mountain", "type": "movie", "year": 1973 },
+            { "title": "Twin Peaks: The Return", "type": "series", "year": 2017 },
+            { "title": "Paprika", "type": "anime", "year": 2006 },
+            { "title": "Koyaanisqatsi", "type": "documentary", "year": 1982 }
+          ]
+        },
+        {
+          "id": "philosophical-slow-burn",
+          "label": "Philosophical — big questions, no easy answers",
+          "description": "Films built around questions rather than answers. They take their time. They trust you to sit with uncertainty. The real thinking happens after you close the laptop.",
+          "tags": ["philosophical", "drama", "slow-cinema", "arthouse"],
+          "examples": [
+            { "title": "The Tree of Life", "type": "movie", "year": 2011 },
+            { "title": "Certified Copy", "type": "movie", "year": 2010 },
+            { "title": "Rectify", "type": "series", "year": 2013 },
+            { "title": "Mushi-Shi", "type": "anime", "year": 2005 },
+            { "title": "Human", "type": "documentary", "year": 2015 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cozy-low-effort",
+      "emoji": "😌",
+      "mood": "Cozy & Low Effort",
+      "description": "You are tired, low energy, or just want something gentle in the background. No emotional demands, no plot you have to track. Just warm, easy, and comfortable.",
+      "timeOfDay": ["morning", "afternoon", "night"],
+      "minRuntime": 20,
+      "maxRuntime": 100,
+      "subMoods": [
+        {
+          "id": "background-comfort",
+          "label": "Background watching — on while you do other things",
+          "description": "You are not giving this your full attention and that is completely fine. Familiar, warm, low-stakes. Something that makes the room feel lived-in without asking anything from you.",
+          "tags": ["comfort", "easy-watch", "light", "background"],
+          "examples": [
+            { "title": "Julie & Julia", "type": "movie", "year": 2009 },
+            { "title": "The Great British Bake Off", "type": "series", "year": 2010 },
+            { "title": "Parks and Recreation", "type": "series", "year": 2009 },
+            { "title": "Laid-Back Camp", "type": "anime", "year": 2018 },
+            { "title": "Chef's Table", "type": "documentary", "year": 2015 }
+          ]
+        },
+        {
+          "id": "fall-asleep-to",
+          "label": "Fall asleep watching — slow, calm, no sudden moments",
+          "description": "Gentle pacing, no loud moments, no cliffhangers. You will not feel like you missed anything important if you drift off. Soothing to watch and even better to fall asleep to.",
+          "tags": ["calm", "slow", "soothing", "light"],
+          "examples": [
+            { "title": "Midnight in Paris", "type": "movie", "year": 2011 },
+            { "title": "Natsume's Book of Friends", "type": "anime", "year": 2008 },
+            { "title": "Our Planet", "type": "documentary", "year": 2019 },
+            { "title": "The Detectorists", "type": "series", "year": 2014 },
+            { "title": "Lost in Translation", "type": "movie", "year": 2003 }
+          ]
+        },
+        {
+          "id": "warm-no-stakes",
+          "label": "Warm and feel-good — everything is going to be okay",
+          "description": "Small stories about good people doing their best. Uplifting without being cheesy. You finish it feeling like the world is a slightly nicer place than you thought.",
+          "tags": ["feel-good", "warm", "uplifting", "light-drama"],
+          "examples": [
+            { "title": "About Time", "type": "movie", "year": 2013 },
+            { "title": "Ted Lasso", "type": "series", "year": 2020 },
+            { "title": "Midnight Diner", "type": "series", "year": 2009 },
+            { "title": "My Neighbor Totoro", "type": "anime", "year": 1988 },
+            { "title": "Won't You Be My Neighbor?", "type": "documentary", "year": 2018 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "expansive-adventurous",
+      "emoji": "🌍",
+      "mood": "Expansive & Adventurous",
+      "description": "You want to go somewhere. Epic stories, faraway places, unfamiliar cultures, or grand journeys that make your own world feel bigger just by watching.",
+      "timeOfDay": ["afternoon", "evening"],
+      "minRuntime": 90,
+      "maxRuntime": 210,
+      "subMoods": [
+        {
+          "id": "take-me-somewhere",
+          "label": "Take me somewhere new — a world or culture I know nothing about",
+          "description": "A window into a place, culture, or community that feels completely foreign to you. The best armchair travel — immersive enough that you feel like you have actually been there by the end.",
+          "tags": ["world-cinema", "travel", "culture", "immersive"],
+          "examples": [
+            { "title": "Capernaum", "type": "movie", "year": 2018 },
+            { "title": "The Motorcycle Diaries", "type": "movie", "year": 2004 },
+            { "title": "Marco Polo", "type": "series", "year": 2014 },
+            { "title": "Vinland Saga", "type": "anime", "year": 2019 },
+            { "title": "Free Solo", "type": "documentary", "year": 2018 }
+          ]
+        },
+        {
+          "id": "epic-sweeping",
+          "label": "Epic scale — wars, dynasties, grand journeys",
+          "description": "Stories so large that the world itself feels like a character. Decades of history, enormous casts, battles and empires. You feel the full weight and sweep of time passing.",
+          "tags": ["epic", "historical", "adventure", "large-scale"],
+          "examples": [
+            { "title": "Lawrence of Arabia", "type": "movie", "year": 1962 },
+            { "title": "The Revenant", "type": "movie", "year": 2015 },
+            { "title": "Band of Brothers", "type": "series", "year": 2001 },
+            { "title": "Legend of the Galactic Heroes", "type": "anime", "year": 1988 },
+            { "title": "The Last Dance", "type": "documentary", "year": 2020 }
+          ]
+        },
+        {
+          "id": "surprise-me",
+          "label": "Surprise me — something I would never pick myself",
+          "description": "You are tired of your own patterns. You want a recommendation that breaks your habits — something you would scroll past but will absolutely love once you start it. Trust the match.",
+          "tags": ["discovery", "wildcard", "varied", "unexpected"],
+          "examples": [
+            { "title": "Tampopo", "type": "movie", "year": 1985 },
+            { "title": "Hunt for the Wilderpeople", "type": "movie", "year": 2016 },
+            { "title": "The Bear", "type": "series", "year": 2022 },
+            { "title": "Ping Pong the Animation", "type": "anime", "year": 2014 },
+            { "title": "Searching for Sugar Man", "type": "documentary", "year": 2012 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inspired-motivated",
+      "emoji": "💡",
+      "mood": "Inspired & Motivated",
+      "description": "You want to feel fired up. Stories about people who pushed through, built something extraordinary, or changed the world. You will close the laptop ready to do something.",
+      "timeOfDay": ["morning", "afternoon"],
+      "minRuntime": 60,
+      "maxRuntime": 150,
+      "subMoods": [
+        {
+          "id": "fired-up",
+          "label": "Leave me feeling fired up and ready to act",
+          "description": "Characters who hustle, grind, and refuse to quit. You finish the film with energy and momentum. Sports stories, startup battles, artists who made it against the odds — all qualify.",
+          "tags": ["inspirational", "true-story", "sports", "biopic"],
+          "examples": [
+            { "title": "Whiplash", "type": "movie", "year": 2014 },
+            { "title": "The Social Network", "type": "movie", "year": 2010 },
+            { "title": "Succession", "type": "series", "year": 2018 },
+            { "title": "Haikyuu!!", "type": "anime", "year": 2014 },
+            { "title": "The Alpinist", "type": "documentary", "year": 2021 }
+          ]
+        },
+        {
+          "id": "character-i-want-to-become",
+          "label": "A character I want to be — someone who changes how I see myself",
+          "description": "You walk away with a new role model. Not a superhero — a real person (or believable fictional one) whose way of thinking, choosing, and living makes you want to be better or braver.",
+          "tags": ["character-study", "inspiring", "drama", "coming-of-age"],
+          "examples": [
+            { "title": "Arrival", "type": "movie", "year": 2016 },
+            { "title": "Portrait of a Lady on Fire", "type": "movie", "year": 2019 },
+            { "title": "Fleabag", "type": "series", "year": 2016 },
+            { "title": "Fullmetal Alchemist: Brotherhood", "type": "anime", "year": 2009 },
+            { "title": "My Octopus Teacher", "type": "documentary", "year": 2020 }
+          ]
+        },
+        {
+          "id": "creative-extraordinary",
+          "label": "Obsessive craft — people who gave everything to one thing",
+          "description": "Artists, chefs, musicians, architects — people so consumed by their work it borders on madness. Watching them is exhausting and exhilarating. You will want to create something immediately after.",
+          "tags": ["creativity", "craft", "art", "biography", "passion"],
+          "examples": [
+            { "title": "Paterson", "type": "movie", "year": 2016 },
+            { "title": "Adaptation", "type": "movie", "year": 2002 },
+            { "title": "The Bear", "type": "series", "year": 2022 },
+            { "title": "Shirobako", "type": "anime", "year": 2014 },
+            { "title": "The Pixar Story", "type": "documentary", "year": 2007 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-relational",
+      "emoji": "💕",
+      "mood": "Social & Relational",
+      "description": "You are watching with someone — or want something about human connection. Romance, friendship, family, and the complicated mess of loving other people.",
+      "timeOfDay": ["afternoon", "evening", "night"],
+      "minRuntime": 80,
+      "maxRuntime": 150,
+      "subMoods": [
+        {
+          "id": "date-night",
+          "label": "Date night — romantic with actual depth, not a basic love story",
+          "description": "Real chemistry, real tension, real longing. Not a predictable romance where you know the ending in the first ten minutes. Something that makes both of you feel something and talk about it after.",
+          "tags": ["romance", "date-night", "tension", "drama"],
+          "examples": [
+            { "title": "Call Me by Your Name", "type": "movie", "year": 2017 },
+            { "title": "Before Sunrise", "type": "movie", "year": 1995 },
+            { "title": "Normal People", "type": "series", "year": 2020 },
+            { "title": "Kaguya-sama: Love Is War", "type": "anime", "year": 2019 },
+            { "title": "Two of Us", "type": "documentary", "year": 2021 }
+          ]
+        },
+        {
+          "id": "friends-something-for-everyone",
+          "label": "Watching with friends — holds attention even if people are chatting",
+          "description": "Crowd-pleasing without being dumbed down. Engaging enough that people stop chatting when something big happens, relaxed enough that it works even if not everyone is fully watching.",
+          "tags": ["group-watch", "crowd-pleaser", "fun", "accessible"],
+          "examples": [
+            { "title": "Knives Out", "type": "movie", "year": 2019 },
+            { "title": "The Grand Budapest Hotel", "type": "movie", "year": 2014 },
+            { "title": "Stranger Things", "type": "series", "year": 2016 },
+            { "title": "Spy x Family", "type": "anime", "year": 2022 },
+            { "title": "Won't You Be My Neighbor?", "type": "documentary", "year": 2018 }
+          ]
+        },
+        {
+          "id": "family-not-boring",
+          "label": "Family watch — kids are entertained, adults are not bored",
+          "description": "Works on two levels at once. Kids are fully engaged, adults find something genuinely interesting too. Layered storytelling that does not talk down to anyone at the table.",
+          "tags": ["family", "animation", "all-ages", "layered"],
+          "examples": [
+            { "title": "Spirited Away", "type": "anime", "year": 2001 },
+            { "title": "The Incredibles", "type": "movie", "year": 2004 },
+            { "title": "Bluey", "type": "series", "year": 2018 },
+            { "title": "Princess Mononoke", "type": "anime", "year": 1997 },
+            { "title": "Babies", "type": "documentary", "year": 2010 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nostalgia",
+      "emoji": "🕯️",
+      "mood": "Nostalgia",
+      "description": "You want to feel like a different time. Childhood memories, a specific decade, or the ache of looking back at something you can't return to. Warm, familiar, and bittersweet.",
+      "timeOfDay": ["afternoon", "evening", "night"],
+      "minRuntime": 60,
+      "maxRuntime": 150,
+      "subMoods": [
+        {
+          "id": "childhood-revisited",
+          "label": "Feel like a kid again — childhood stories and wonder",
+          "description": "Stories seen through the eyes of a child — full of curiosity, magic, and small things that feel enormous. Whether you are 20 or 50, these take you back to a simpler version of yourself.",
+          "tags": ["childhood", "coming-of-age", "wonder", "family", "memory"],
+          "examples": [
+            { "title": "Stand by Me", "type": "movie", "year": 1986 },
+            { "title": "My Girl", "type": "movie", "year": 1991 },
+            { "title": "Stranger Things", "type": "series", "year": 2016 },
+            { "title": "A Little Snow Fairy Sugar", "type": "anime", "year": 2001 },
+            { "title": "The Florida Project", "type": "movie", "year": 2017 }
+          ]
+        },
+        {
+          "id": "specific-era",
+          "label": "A specific era — 80s, 90s, or 2000s aesthetic and feel",
+          "description": "You want the look, sound, and energy of a specific decade. Fashion, music, technology, references — all intact. It is not just about the story, it is about being transported to that moment in time.",
+          "tags": ["retro", "80s", "90s", "2000s", "period", "aesthetic"],
+          "examples": [
+            { "title": "Dazed and Confused", "type": "movie", "year": 1993 },
+            { "title": "Boogie Nights", "type": "movie", "year": 1997 },
+            { "title": "That 70s Show", "type": "series", "year": 1998 },
+            { "title": "City Hunter", "type": "anime", "year": 1987 },
+            { "title": "The Last Blockbuster", "type": "documentary", "year": 2020 }
+          ]
+        },
+        {
+          "id": "bittersweet-memory",
+          "label": "Bittersweet memory — looking back at something that can't be relived",
+          "description": "The specific ache of time passing. Stories about people who had something beautiful that is now gone — a friendship, a place, a version of themselves. Warm and melancholic at the same time.",
+          "tags": ["memory", "past", "bittersweet", "loss", "time"],
+          "examples": [
+            { "title": "The Way Way Back", "type": "movie", "year": 2013 },
+            { "title": "Boyhood", "type": "movie", "year": 2014 },
+            { "title": "The Wonder Years", "type": "series", "year": 1988 },
+            { "title": "Only Yesterday", "type": "anime", "year": 1991 },
+            { "title": "Stories We Tell", "type": "documentary", "year": 2012 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rabbit-hole",
+      "emoji": "🔍",
+      "mood": "Down a Rabbit Hole",
+      "description": "You want to get obsessed with something real. True crime, hidden conspiracies, investigative journalism — one episode in and you realize it is now 3am and you cannot stop.",
+      "timeOfDay": ["afternoon", "evening", "night"],
+      "minRuntime": 30,
+      "maxRuntime": 120,
+      "subMoods": [
+        {
+          "id": "true-crime",
+          "label": "True crime — real cases, real people, no easy answers",
+          "description": "A real crime told in full detail. Who did it, why, and how. You will form opinions, change your mind, and feel unsettled by how close the truth is to ordinary life.",
+          "tags": ["true-crime", "murder", "investigation", "real-events", "crime"],
+          "examples": [
+            { "title": "Zodiac", "type": "movie", "year": 2007 },
+            { "title": "Memories of Murder", "type": "movie", "year": 2003 },
+            { "title": "Making a Murderer", "type": "documentary", "year": 2015 },
+            { "title": "Monster: The Jeffrey Dahmer Story", "type": "series", "year": 2022 },
+            { "title": "The Jinx", "type": "documentary", "year": 2015 }
+          ]
+        },
+        {
+          "id": "conspiracy-coverup",
+          "label": "Conspiracy and cover-ups — something powerful is hiding the truth",
+          "description": "Systems, institutions, and powerful people who did not want this story told. The more you watch, the bigger the picture gets. Infuriating, riveting, and hard to shake.",
+          "tags": ["conspiracy", "cover-up", "corruption", "power", "investigation"],
+          "examples": [
+            { "title": "Spotlight", "type": "movie", "year": 2015 },
+            { "title": "The Big Short", "type": "movie", "year": 2015 },
+            { "title": "Dopesick", "type": "series", "year": 2021 },
+            { "title": "Patlabor 2: The Movie", "type": "anime", "year": 1993 },
+            { "title": "Citizenfour", "type": "documentary", "year": 2014 }
+          ]
+        },
+        {
+          "id": "investigative-journalism",
+          "label": "Investigative journalism — reporters uncovering something huge",
+          "description": "Journalists following a story that keeps getting bigger and more dangerous. The tension is in the research, the sources, the risk. One of the most compelling narrative structures that exists.",
+          "tags": ["journalism", "investigation", "truth", "media", "expose"],
+          "examples": [
+            { "title": "All the President's Men", "type": "movie", "year": 1976 },
+            { "title": "She Said", "type": "movie", "year": 2022 },
+            { "title": "The Loudest Voice", "type": "series", "year": 2019 },
+            { "title": "Monster", "type": "anime", "year": 2004 },
+            { "title": "The Cleaners", "type": "documentary", "year": 2018 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coming-of-age",
+      "emoji": "🌱",
+      "mood": "Coming of Age",
+      "description": "The universal ache of becoming who you are. First loves, big mistakes, belonging, and the painful gap between who you were and who you are becoming. Hits at any age.",
+      "timeOfDay": ["afternoon", "evening"],
+      "minRuntime": 60,
+      "maxRuntime": 140,
+      "subMoods": [
+        {
+          "id": "first-love-innocence",
+          "label": "First love and innocence — before everything got complicated",
+          "description": "That specific intensity of feelings when everything is new and nothing is held back. Young love, first heartbreak, the version of yourself before you learned to protect yourself.",
+          "tags": ["first-love", "romance", "youth", "innocence", "tender"],
+          "examples": [
+            { "title": "Call Me by Your Name", "type": "movie", "year": 2017 },
+            { "title": "The Perks of Being a Wallflower", "type": "movie", "year": 2012 },
+            { "title": "Euphoria", "type": "series", "year": 2019 },
+            { "title": "Toradora!", "type": "anime", "year": 2008 },
+            { "title": "Adolescence", "type": "documentary", "year": 2025 }
+          ]
+        },
+        {
+          "id": "finding-belonging",
+          "label": "Finding where you belong — outsiders looking for their people",
+          "description": "Characters who don't fit anywhere trying to find a place they do. The relief when they find it, the cost when they don't. Universal across every age, background, and culture.",
+          "tags": ["belonging", "identity", "outsider", "friendship", "self-discovery"],
+          "examples": [
+            { "title": "The Breakfast Club", "type": "movie", "year": 1985 },
+            { "title": "Moonlight", "type": "movie", "year": 2016 },
+            { "title": "Sex Education", "type": "series", "year": 2019 },
+            { "title": "My Hero Academia", "type": "anime", "year": 2016 },
+            { "title": "American Teen", "type": "documentary", "year": 2008 }
+          ]
+        },
+        {
+          "id": "rebellion-self-discovery",
+          "label": "Rebellion and self-discovery — breaking free from what was expected",
+          "description": "A person realizing the life mapped out for them is not the life they want. The push against family, society, or their own fear. Messy, honest, and deeply relatable.",
+          "tags": ["rebellion", "freedom", "identity", "growth", "independence"],
+          "examples": [
+            { "title": "Lady Bird", "type": "movie", "year": 2017 },
+            { "title": "Billy Elliot", "type": "movie", "year": 2000 },
+            { "title": "Skins", "type": "series", "year": 2007 },
+            { "title": "Fruits Basket", "type": "anime", "year": 2019 },
+            { "title": "Hoop Dreams", "type": "documentary", "year": 1994 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wonder-awe",
+      "emoji": "🌌",
+      "mood": "Wonder & Awe",
+      "description": "You want to feel small in the best possible way. The cosmos, the deep ocean, ancient civilizations, or the sheer improbability of life itself. Humbling, beautiful, and quietly overwhelming.",
+      "timeOfDay": ["morning", "afternoon", "evening"],
+      "minRuntime": 40,
+      "maxRuntime": 180,
+      "subMoods": [
+        {
+          "id": "cosmic-space",
+          "label": "Space and the cosmos — the universe is incomprehensibly large",
+          "description": "Stories set against the scale of space or time. You finish feeling tiny, temporary, and somehow okay with that. Sci-fi that is about wonder and possibility rather than conflict.",
+          "tags": ["space", "sci-fi", "cosmos", "existential", "awe"],
+          "examples": [
+            { "title": "Interstellar", "type": "movie", "year": 2014 },
+            { "title": "Contact", "type": "movie", "year": 1997 },
+            { "title": "For All Mankind", "type": "series", "year": 2019 },
+            { "title": "Planetes", "type": "anime", "year": 2003 },
+            { "title": "The Overview Effect", "type": "documentary", "year": 2012 }
+          ]
+        },
+        {
+          "id": "nature-earth",
+          "label": "Nature and earth — life on this planet is extraordinary",
+          "description": "The natural world in all its detail and scale. Creatures, ecosystems, and landscapes that make you realize how little of this planet you have actually seen. Calming and awe-inspiring simultaneously.",
+          "tags": ["nature", "animals", "earth", "environment", "beauty"],
+          "examples": [
+            { "title": "Microcosmos", "type": "documentary", "year": 1996 },
+            { "title": "Oceans", "type": "documentary", "year": 2009 },
+            { "title": "Our Planet", "type": "documentary", "year": 2019 },
+            { "title": "Princess Mononoke", "type": "anime", "year": 1997 },
+            { "title": "Beasts of the Southern Wild", "type": "movie", "year": 2012 }
+          ]
+        },
+        {
+          "id": "ancient-worlds",
+          "label": "Ancient worlds and civilizations — humans have been here a very long time",
+          "description": "Empires that rose and fell thousands of years ago. Cultures, myths, and discoveries that reframe what it means to be human. History as something enormous and humbling, not a list of dates.",
+          "tags": ["history", "ancient", "civilization", "archaeology", "humanity"],
+          "examples": [
+            { "title": "Agora", "type": "movie", "year": 2009 },
+            { "title": "The Last Kingdom", "type": "series", "year": 2015 },
+            { "title": "Vinland Saga", "type": "anime", "year": 2019 },
+            { "title": "Cave of Forgotten Dreams", "type": "documentary", "year": 2010 },
+            { "title": "Rome", "type": "series", "year": 2005 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "late-night-noir",
+      "emoji": "🌙",
+      "mood": "Late Night & Noir",
+      "description": "It is late, you are alone, and you want something that matches that feeling. Moody, atmospheric, morally grey. Jazz, shadows, cities at night, and characters making bad decisions for understandable reasons.",
+      "timeOfDay": ["night"],
+      "minRuntime": 80,
+      "maxRuntime": 160,
+      "subMoods": [
+        {
+          "id": "classic-noir",
+          "label": "Classic noir — black and white, morally grey, everyone is hiding something",
+          "description": "The original mood cinema. Hard-boiled detectives, femmes fatales, rain-soaked streets, and a world where no one is innocent. Stylish, cynical, and endlessly atmospheric.",
+          "tags": ["noir", "classic", "crime", "mystery", "black-and-white"],
+          "examples": [
+            { "title": "Double Indemnity", "type": "movie", "year": 1944 },
+            { "title": "Chinatown", "type": "movie", "year": 1974 },
+            { "title": "Twin Peaks", "type": "series", "year": 1990 },
+            { "title": "Cowboy Bebop", "type": "anime", "year": 1998 },
+            { "title": "The Thin Blue Line", "type": "documentary", "year": 1988 }
+          ]
+        },
+        {
+          "id": "neo-noir-crime",
+          "label": "Neo-noir — modern crime, moral ambiguity, no clean endings",
+          "description": "Contemporary stories with a noir soul. The city is still corrupt, the characters are still compromised, but the setting is now. Crime that does not glamorize itself. Nobody wins cleanly.",
+          "tags": ["neo-noir", "crime", "modern", "ambiguous", "gritty"],
+          "examples": [
+            { "title": "Nightcrawler", "type": "movie", "year": 2014 },
+            { "title": "No Country for Old Men", "type": "movie", "year": 2007 },
+            { "title": "True Detective Season 1", "type": "series", "year": 2014 },
+            { "title": "91 Days", "type": "anime", "year": 2016 },
+            { "title": "Casting JonBenet", "type": "documentary", "year": 2017 }
+          ]
+        },
+        {
+          "id": "moody-atmospheric",
+          "label": "Just moody and atmospheric — slow, dark, beautifully shot",
+          "description": "The plot is almost beside the point. What matters is the light, the silence, the texture of every scene. Films that feel like being inside a painting at 2am. Best experienced alone.",
+          "tags": ["atmospheric", "moody", "slow", "visual", "cinematic"],
+          "examples": [
+            { "title": "Blade Runner 2049", "type": "movie", "year": 2017 },
+            { "title": "Only God Forgives", "type": "movie", "year": 2013 },
+            { "title": "Mindhunter", "type": "series", "year": 2017 },
+            { "title": "Texhnolyze", "type": "anime", "year": 2003 },
+            { "title": "Listen to Me Marlon", "type": "documentary", "year": 2015 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eye-opening",
+      "emoji": "👁️",
+      "mood": "Eye-Opening & Important",
+      "description": "You want to understand the world better. Injustice, power, systems that affect real people — stories that change what you know and make you care about something you did not before.",
+      "timeOfDay": ["morning", "afternoon", "evening"],
+      "minRuntime": 60,
+      "maxRuntime": 150,
+      "subMoods": [
+        {
+          "id": "social-justice-inequality",
+          "label": "Social justice and inequality — stories about systems that fail people",
+          "description": "Racism, poverty, gender, class — the structural forces that shape people's lives in ways they did not choose. Told through specific individuals, not statistics. Uncomfortable and necessary.",
+          "tags": ["social-justice", "inequality", "race", "poverty", "human-rights"],
+          "examples": [
+            { "title": "Selma", "type": "movie", "year": 2014 },
+            { "title": "I Am Not Your Negro", "type": "documentary", "year": 2016 },
+            { "title": "When They See Us", "type": "series", "year": 2019 },
+            { "title": "In This Corner of the World", "type": "anime", "year": 2016 },
+            { "title": "13th", "type": "documentary", "year": 2016 }
+          ]
+        },
+        {
+          "id": "political-power",
+          "label": "Politics and power — how decisions get made and who pays for them",
+          "description": "How governments, corporations, and institutions actually work — not the textbook version. The compromises, the corruption, and the rare moments when someone does the right thing anyway.",
+          "tags": ["politics", "power", "corruption", "government", "systemic"],
+          "examples": [
+            { "title": "Vice", "type": "movie", "year": 2018 },
+            { "title": "The Report", "type": "movie", "year": 2019 },
+            { "title": "Succession", "type": "series", "year": 2018 },
+            { "title": "Legend of the Galactic Heroes", "type": "anime", "year": 1988 },
+            { "title": "The Panama Papers", "type": "documentary", "year": 2018 }
+          ]
+        },
+        {
+          "id": "environmental-existential",
+          "label": "Environmental and existential — the planet and our place on it",
+          "description": "Climate, extinction, technology, and the future of human civilization. Not doom scrolling — but honest, urgent storytelling about what is actually happening and what it means.",
+          "tags": ["environment", "climate", "future", "existential", "technology"],
+          "examples": [
+            { "title": "Don't Look Up", "type": "movie", "year": 2021 },
+            { "title": "Beasts of the Southern Wild", "type": "movie", "year": 2012 },
+            { "title": "Years and Years", "type": "series", "year": 2019 },
+            { "title": "Nausicaä of the Valley of the Wind", "type": "anime", "year": 1984 },
+            { "title": "2040", "type": "documentary", "year": 2019 }
+          ]
+        }
+      ]
+    }
+  ]
+}

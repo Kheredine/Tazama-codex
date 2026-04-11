@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "question": "What is the developer's first name?",
+    "answer": "kheredine"
+  },
+  {
+    "id": 2,
+    "question": "what is the developer's favorite color?",
+    "answer": "black"
+  },
+  {
+    "id": 3,
+    "question": "What type of song does the developer like?",
+    "answer": "sad songs"
+  }
+]

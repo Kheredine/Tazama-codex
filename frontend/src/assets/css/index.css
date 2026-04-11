@@ -1,0 +1,113 @@
+/* ── Plan Themes ────────────────────────────────────────────────────────── */
+/* Standard (purple) — default */
+:root {
+  --accent:        #7c3aed;
+  --accent-light:  #9f67ff;
+  --accent-glow:   rgba(124, 58, 237, 0.5);
+  --accent-bg:     rgba(124, 58, 237, 0.15);
+  --accent-border: rgba(124, 58, 237, 0.35);
+  --plan-badge:    #7c3aed;
+}
+
+/* Premium — same purple palette as standard.
+   Only the profile pill in TopBar uses amber/gold styling (via isPremium in JS).
+   Keeping data-plan on <html> so JS can still read it, but no color override. */
+
+@import "tailwindcss";
+
+@theme {
+    --font-logo: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-heroTitle: 'Impact', sans-serif;
+
+    --tracking-2: 0.2em;
+
+    --animate-fadeUp: fadeUp 0.6s 0.1s forwards;
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+}
+
+@layer components {
+  /* ── Buttons ─────────────────────────────────── */
+  .btn-primary {
+    @apply text-white bg-purple-600 hover:bg-purple-700
+        cursor-pointer transition px-5 py-3 rounded-xl font-semibold text-sm;
+  }
+
+  .btn-secondary-1 {
+    @apply text-white/80 border border-white/25
+            hover:border-white/50 hover:text-white
+            bg-transparent backdrop-blur-md
+            px-5 py-3 rounded-xl font-medium text-sm
+            transition cursor-pointer;
+  }
+
+  .btn-secondary-2 {
+    @apply text-white/80 bg-white/8
+            hover:bg-white/12 hover:text-white
+            backdrop-blur-md
+            px-5 py-3 rounded-xl font-medium text-sm
+            transition cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply text-white/70 hover:text-white
+            bg-transparent px-5 py-3 rounded-xl font-medium text-sm
+            transition cursor-pointer;
+  }
+
+  /* Mood selection pills */
+  .btn-time-pill {
+    @apply text-white/75 text-sm font-medium py-2.5 px-5 rounded-xl
+           bg-white/5 border border-white/12 cursor-pointer
+           hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-white
+           transition duration-200;
+  }
+
+  .pill_active {
+    @apply bg-purple-600/35 border border-purple-700/70 text-white;
+  }
+
+  .badge {
+    @apply bg-purple-600/70 text-white px-2 py-1 rounded-full text-xs font-semibold;
+  }
+
+  /* Scroll offset so sections don't hide under fixed header */
+  .scroll-section {
+    scroll-margin-top: 88px;
+  }
+}
+
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.page-enter-from { opacity: 0; transform: translateY(6px); }
+.page-leave-to   { opacity: 0; transform: translateY(-6px); }
+
+/* Global base */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  background: #0a0615;
+  background-image:
+    radial-gradient(1200px at 20% 10%, rgba(124,58,237,0.13), transparent),
+    radial-gradient(1000px at 80% 90%, rgba(88,28,255,0.10), transparent);
+  background-attachment: fixed;
+  color: #f0eeff;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.35); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6); }

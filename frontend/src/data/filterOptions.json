@@ -1,0 +1,280 @@
+{
+  "version": "5.1.0",
+  "filterOptions": {
+    "timeAvailabilities": [
+      "Any time", "< 30 mins", "~ 1 hour", "~ 2 hours", "> 3 hours"
+    ],
+    "timeAvailabilities_fr": [
+      "Peu importe", "< 30 min", "~ 1 heure", "~ 2 heures", "> 3 heures"
+    ],
+    "contentTypes": [
+      "Any content", "Movies", "Series", "Anime", "TV Shows", "Documentaries"
+    ],
+    "contentTypes_fr": [
+      "Tout contenu", "Films", "Séries", "Anime", "Émissions TV", "Documentaires"
+    ],
+    "eras": [
+      "Any era", "Classic (pre-1980)", "80s", "90s", "2000s", "2010s", "Recent (2020+)"
+    ],
+    "eras_fr": [
+      "Toute époque", "Classique (avant 1980)", "Années 80", "Années 90", "Années 2000", "Années 2010", "Récent (2020+)"
+    ]
+  },
+  "moods": [
+    {
+      "id": "laugh",
+      "emoji": "😄",
+      "mood": "Make me laugh out loud",
+      "mood_fr": "Faites-moi rire aux éclats",
+      "description": "You want something fun and light. You're not in the mood for anything heavy — just good vibes and a smile.",
+      "description_fr": "Vous voulez quelque chose de léger et amusant. Pas d'histoires lourdes — juste de bonne humeur et des sourires.",
+      "submoods": [
+        {
+          "id": "laugh-easy",
+          "submood": "Just stupid-funny — no brain required",
+          "submood_fr": "Bêtement drôle — sans se prendre la tête",
+          "description": "Easy, broad comedy you can enjoy while half-distracted. Nothing clever to decode — just warm, silly humor that leaves you in a better mood.",
+          "description_fr": "Une comédie facile et accessible, même à moitié distrait. Pas de subtilité à décoder — juste de l'humour chaleureux et idiot qui vous redonne le sourire."
+        },
+        {
+          "id": "laugh-dark",
+          "submood": "Dark comedy that makes me feel guilty for laughing",
+          "submood_fr": "Comédie noire qui me fait rire malgré moi",
+          "description": "Smart, uncomfortable humor. The jokes are funny because they're about something real and a bit wrong. You'll laugh, then catch yourself wondering why.",
+          "description_fr": "Un humour intelligent et inconfortable. Les blagues sont drôles parce qu'elles touchent quelque chose de vrai. Vous rirez, puis vous vous demanderez pourquoi."
+        },
+        {
+          "id": "laugh-chaos",
+          "submood": "Pure chaos — I have no idea what's about to happen",
+          "submood_fr": "Chaos total — aucune idée de ce qui va se passer",
+          "description": "Completely unpredictable from the first minute. High energy, totally absurd, never slows down. You can't look away even when it makes no sense.",
+          "description_fr": "Totalement imprévisible dès la première minute. Énergie débordante, absurde et déchaîné. Impossible de regarder ailleurs, même quand ça n'a aucun sens."
+        }
+      ]
+    },
+    {
+      "id": "feel",
+      "emoji": "🥺",
+      "mood": "Make me feel something deep",
+      "mood_fr": "Faites-moi ressentir quelque chose de profond",
+      "description": "You want to be moved. Real emotions, real stories, the kind of thing that sticks with you after it ends.",
+      "description_fr": "Vous voulez être ému. De vraies émotions, de vraies histoires — le genre qui reste en vous longtemps après la fin.",
+      "submoods": [
+        {
+          "id": "feel-cry",
+          "submood": "I want to cry and feel better after",
+          "submood_fr": "Je veux pleurer et me sentir mieux après",
+          "description": "A deeply human story that earns every tear — not manipulative or cheap, just honest and moving. You'll feel emotionally spent in the best possible way.",
+          "description_fr": "Une histoire profondément humaine qui mérite chaque larme — pas manipulatrice, juste honnête et bouleversante. Vous serez émotionnellement épuisé, dans le bon sens du terme."
+        },
+        {
+          "id": "feel-beautiful",
+          "submood": "Sad but beautiful, not depressing",
+          "submood_fr": "Triste mais beau, pas déprimant",
+          "description": "The bittersweet kind of sad. Melancholic like a song that stays in your head for days. You leave feeling moved and strangely at peace.",
+          "description_fr": "Une tristesse douce-amère. Mélancolique comme une chanson qui reste dans la tête pendant des jours. On repart ému et étrangement apaisé."
+        },
+        {
+          "id": "feel-inspired",
+          "submood": "Leave me inspired and ready to do something",
+          "submood_fr": "Laissez-moi inspiré et prêt à agir",
+          "description": "Stories about people who pushed through impossible situations. Real or fictional — you finish it with energy, momentum, and the feeling that anything is possible.",
+          "description_fr": "Des histoires de gens qui ont surmonté l'impossible. Réel ou fictif — vous terminez avec de l'énergie et le sentiment que tout est possible."
+        }
+      ]
+    },
+    {
+      "id": "thrill",
+      "emoji": "⚡",
+      "mood": "Get my heart pumping",
+      "mood_fr": "Faites battre mon cœur plus vite",
+      "description": "You need intensity. High stakes, fast pace, or creeping dread — something that keeps you completely locked in.",
+      "description_fr": "Vous avez besoin d'intensité. Enjeux élevés, rythme rapide ou terreur progressive — quelque chose qui vous tient en haleine.",
+      "submoods": [
+        {
+          "id": "thrill-action",
+          "submood": "Non-stop action — fights, chases, explosions",
+          "submood_fr": "Action non-stop — combats, poursuites, explosions",
+          "description": "Full throttle from minute one. You're here for movement, impact, and spectacle. Your brain rests, your pulse doesn't.",
+          "description_fr": "À fond la caisse dès la première minute. Du mouvement, de l'impact, du spectacle. Votre cerveau se repose, pas votre pouls."
+        },
+        {
+          "id": "thrill-suspense",
+          "submood": "I want to hold my breath for 2 hours",
+          "submood_fr": "Je veux retenir mon souffle pendant 2 heures",
+          "description": "Tension that builds slowly and never fully releases. You won't realize how tense you are until the credits roll and you finally exhale.",
+          "description_fr": "Une tension qui monte lentement et ne retombe jamais vraiment. Vous ne réalisez pas à quel point vous êtes crispé jusqu'au générique de fin."
+        },
+        {
+          "id": "thrill-horror",
+          "submood": "Scare me — monsters, jump scares, things in the dark",
+          "submood_fr": "Faites-moi peur — monstres, jump scares, ombres dans le noir",
+          "description": "Classic horror built to make you flinch, gasp, and check what's behind you. Not subtle dread — genuine scares delivered loud and clear.",
+          "description_fr": "De l'horreur classique conçue pour vous faire sursauter et regarder par-dessus votre épaule. Pas de peur subtile — de vraies frayeurs, franches et directes."
+        },
+        {
+          "id": "thrill-heist",
+          "submood": "A brilliant plan coming together under pressure",
+          "submood_fr": "Un plan brillant qui se déroule sous pression",
+          "description": "The thrill is mental. A crew with a scheme so intricate you can barely follow it — and when it clicks, it's deeply satisfying.",
+          "description_fr": "Le frisson est mental. Un groupe avec un plan si complexe qu'on arrive à peine à le suivre — et quand tout s'emboîte, c'est profondément satisfaisant."
+        }
+      ]
+    },
+    {
+      "id": "think",
+      "emoji": "🧠",
+      "mood": "Challenge my brain",
+      "mood_fr": "Défiez mon cerveau",
+      "description": "You want something that makes you think. Complex ideas, layers of meaning, or puzzles that unravel slowly.",
+      "description_fr": "Vous voulez quelque chose qui vous fait réfléchir. Des idées complexes, des couches de sens, des énigmes qui se dévoilent lentement.",
+      "submoods": [
+        {
+          "id": "think-mindbend",
+          "submood": "I want my mind completely blown",
+          "submood_fr": "Je veux que mon cerveau explose",
+          "description": "Non-linear timelines, unreliable narrators, ideas that only land after the credits. You'll want to discuss it immediately, or watch it again right away.",
+          "description_fr": "Des chronologies non-linéaires, des narrateurs peu fiables, des idées qui ne font sens qu'après le générique. Vous voudrez en parler immédiatement, ou le revoir tout de suite."
+        },
+        {
+          "id": "think-philosophical",
+          "submood": "Big questions with no easy answers",
+          "submood_fr": "De grandes questions sans réponses faciles",
+          "description": "Stories built around things that can't be resolved — existence, morality, identity. They trust you to sit with uncertainty.",
+          "description_fr": "Des histoires construites autour de ce qui ne peut pas être résolu — l'existence, la morale, l'identité. Ils vous font confiance pour vivre dans l'incertitude."
+        },
+        {
+          "id": "think-investigative",
+          "submood": "A mystery I can try to solve along the way",
+          "submood_fr": "Un mystère que je peux essayer de résoudre en chemin",
+          "description": "True crime, investigative journalism, or thriller puzzles where you're piecing clues together. One episode in and it's 3am and you can't stop.",
+          "description_fr": "True crime, journalisme d'investigation, ou thrillers où vous assemblez les indices. Un épisode et il est 3h du matin et vous ne pouvez pas vous arrêter."
+        }
+      ]
+    },
+    {
+      "id": "relax",
+      "emoji": "😌",
+      "mood": "Help me unwind and decompress",
+      "mood_fr": "Aidez-moi à me détendre et décompresser",
+      "description": "You're tired, drained, or just need something easy. No emotional demands, no plot to track — just gentle and comfortable.",
+      "description_fr": "Vous êtes fatigué ou simplement besoin de quelque chose de facile. Pas de pression émotionnelle, pas d'intrigue complexe — juste du calme et du confort.",
+      "submoods": [
+        {
+          "id": "relax-cozy",
+          "submood": "Warm and feel-good — everything works out fine",
+          "submood_fr": "Chaleureux et feel-good — tout finit bien",
+          "description": "Small stories about kind people doing their best. Uplifting without being cheesy. You finish it feeling like the world is a slightly better place.",
+          "description_fr": "De petites histoires sur des gens bienveillants qui font de leur mieux. Réconfortant sans être mièvre. On repart avec le sentiment que le monde est un peu meilleur."
+        },
+        {
+          "id": "relax-background",
+          "submood": "Something I can have on in the background",
+          "submood_fr": "Quelque chose à regarder en arrière-plan",
+          "description": "You're not giving this your full attention and that's completely fine. Familiar, pleasant, low-stakes.",
+          "description_fr": "Vous n'êtes pas totalement concentré et c'est tout à fait normal. Familier, agréable, sans enjeu."
+        },
+        {
+          "id": "relax-nature",
+          "submood": "Beautiful visuals of nature and the world",
+          "submood_fr": "De belles images de la nature et du monde",
+          "description": "Stunning imagery of our planet — wildlife, landscapes, oceans. Calming to watch, humbling in scale, quietly spectacular.",
+          "description_fr": "Des images spectaculaires de notre planète — faune, paysages, océans. Apaisant à regarder, impressionnant par son ampleur, discrètement grandiose."
+        }
+      ]
+    },
+    {
+      "id": "romance",
+      "emoji": "💘",
+      "mood": "Get me in the mood for love",
+      "mood_fr": "Mettez-moi dans l'ambiance romantique",
+      "description": "Longing, chemistry, connection. Stories about the complicated, wonderful mess of loving other people.",
+      "description_fr": "Désir, alchimie, connexion. Des histoires sur la merveilleuse et complexe aventure d'aimer les autres.",
+      "submoods": [
+        {
+          "id": "romance-deep",
+          "submood": "Real romance with actual tension, not a cliché",
+          "submood_fr": "Une vraie romance avec de la tension, pas un cliché",
+          "description": "Genuine chemistry, real longing, a story where you're not sure how it ends until it does. The kind that makes you both feel something and talk about it after.",
+          "description_fr": "Une vraie alchimie, un vrai désir, une histoire dont vous ne connaissez pas la fin jusqu'à la dernière seconde. Le genre qui vous fait ressentir quelque chose et en parler après."
+        },
+        {
+          "id": "romance-friends",
+          "submood": "Something fun to watch with friends or a group",
+          "submood_fr": "Quelque chose à regarder en groupe ou entre amis",
+          "description": "Crowd-pleasing and easy to enjoy together. Engaging enough that people stop chatting when something happens.",
+          "description_fr": "Plaisant pour tout le monde et facile à apprécier ensemble. Assez engageant pour que les gens arrêtent de parler quand quelque chose se passe."
+        },
+        {
+          "id": "romance-family",
+          "submood": "A feel-good film the whole family can enjoy",
+          "submood_fr": "Un film feel-good que toute la famille peut apprécier",
+          "description": "Works on two levels at once. Kids are fully entertained, adults find something genuinely worthwhile too.",
+          "description_fr": "Fonctionne sur deux niveaux à la fois. Les enfants sont divertis, les adultes trouvent aussi quelque chose de vraiment valable."
+        }
+      ]
+    },
+    {
+      "id": "realworld",
+      "emoji": "🌍",
+      "mood": "Open my eyes to the real world",
+      "mood_fr": "Ouvrez-moi les yeux sur le monde réel",
+      "description": "Stories grounded in reality — injustice, other cultures, real people. Things that make you understand the world a little better.",
+      "description_fr": "Des histoires ancrées dans la réalité — injustice, autres cultures, vraies personnes. Des choses qui vous aident à mieux comprendre le monde.",
+      "submoods": [
+        {
+          "id": "realworld-culture",
+          "submood": "Take me somewhere I've never been — another culture",
+          "submood_fr": "Emmenez-moi quelque part où je ne suis jamais allé",
+          "description": "A window into a life, place, or community completely foreign to your own. The best kind of armchair travel.",
+          "description_fr": "Une fenêtre sur une vie, un lieu ou une communauté qui vous est totalement étrangère. Le meilleur voyage depuis votre canapé."
+        },
+        {
+          "id": "realworld-social",
+          "submood": "Show me injustice or something I need to understand",
+          "submood_fr": "Montrez-moi une injustice ou quelque chose que je dois comprendre",
+          "description": "Stories about systems, power, and people who paid the price for both. Told through specific individuals, not statistics.",
+          "description_fr": "Des histoires sur les systèmes, le pouvoir et ceux qui en paient le prix. Racontées à travers des individus, pas des statistiques."
+        },
+        {
+          "id": "realworld-biography",
+          "submood": "The real story behind a remarkable person",
+          "submood_fr": "La vraie histoire derrière une personne remarquable",
+          "description": "Artists, pioneers, athletes, troublemakers — people who actually changed things. The true story is almost always stranger than the legend.",
+          "description_fr": "Artistes, pionniers, athlètes, rebelles — des gens qui ont vraiment changé les choses. La vraie histoire est presque toujours plus étrange que la légende."
+        }
+      ]
+    },
+    {
+      "id": "atmosphere",
+      "emoji": "🌙",
+      "mood": "Set the perfect late-night vibe",
+      "mood_fr": "Installez l'ambiance parfaite pour la nuit",
+      "description": "It's late. You want something moody, cinematic, or dreamlike. Atmosphere over plot — style you can feel.",
+      "description_fr": "Il est tard. Vous voulez quelque chose d'atmosphérique, cinématographique ou onirique. L'ambiance prime sur l'intrigue — du style que l'on ressent.",
+      "submoods": [
+        {
+          "id": "atmosphere-noir",
+          "submood": "Dark and moody — jazz, rain, morally grey characters",
+          "submood_fr": "Sombre et mélancolique — jazz, pluie, personnages ambigus",
+          "description": "The world is corrupt, nobody is innocent, and the lighting is perfect. Hard-boiled, atmospheric, and stylish in a way that feels timeless.",
+          "description_fr": "Le monde est corrompu, personne n'est innocent, et l'éclairage est parfait. Dur à cuire, atmosphérique et élégant d'une manière intemporelle."
+        },
+        {
+          "id": "atmosphere-surreal",
+          "submood": "Dreamlike and strange — images I'll still think about tomorrow",
+          "submood_fr": "Onirique et étrange — des images auxquelles je penserai encore demain",
+          "description": "Logic isn't the point. You experience these more than you understand them. Symbols, textures, and mood matter more than story.",
+          "description_fr": "La logique n'est pas le sujet. On les vit plus qu'on ne les comprend. Les symboles, les textures et l'ambiance comptent plus que l'histoire."
+        },
+        {
+          "id": "atmosphere-scifi",
+          "submood": "Sci-fi that makes me feel small and wonder about existence",
+          "submood_fr": "De la sci-fi qui me fait me sentir tout petit face à l'existence",
+          "description": "Space, the future, the staggering improbability of life. You finish feeling tiny, temporary, and somehow at peace with that.",
+          "description_fr": "L'espace, le futur, l'improbabilité vertigineuse de la vie. On termine en se sentant minuscule, éphémère, et étrangement en paix avec ça."
+        }
+      ]
+    }
+  ]
+}
