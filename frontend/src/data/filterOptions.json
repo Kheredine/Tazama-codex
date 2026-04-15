@@ -120,6 +120,316 @@
           "description_fr": "Je veux une histoire intelligente où tout s’assemble."
         }
       ]
+    },
+    {
+      "id": "wonder",
+      "emoji": "✨",
+      "mood": "I want to feel awe and wonder at something extraordinary",
+      "mood_fr": "Je veux ressentir de l’émerveillement devant quelque chose d’extraordinaire",
+      "description": "I’m looking for something that inspires awe and amazement.",
+      "description_fr": "Je veux quelque chose qui inspire l’émerveillement et l’admiration.",
+      "submoods": [
+        {
+          "id": "wonder-sci-fi",
+          "submood": "I want to explore mind-blowing science fiction concepts and worlds",
+          "submood_fr": "Je veux explorer des concepts de science-fiction époustouflants",
+          "description": "I want a story that introduces me to incredible sci-fi ideas and settings.",
+          "description_fr": "Je veux une histoire qui me présente des idées et des décors de science-fiction incroyables."
+        },
+        {
+          "id": "wonder-fantasy",
+          "submood": "I want to be transported to magical worlds filled with wonder and enchantment",
+          "submood_fr": "Je veux être transporté dans des mondes magiques remplis de merveilles",
+          "description": "I want a story that immerses me in fantastical realms of magic and mystery.",
+          "description_fr": "Je veux une histoire qui m’immerge dans des royaumes fantastiques de magie et de mystère."
+        },
+        {
+          "id": "wonder-realism",
+          "submood": "I want to find wonder in the beauty and complexity of the real world",
+          "submood_fr": "Je veux trouver de la merveille dans la beauté du monde réel",
+          "description": "I want a story that reveals the extraordinary aspects of everyday life.",
+          "description_fr": "Je veux une histoire qui révèle les aspects extraordinaires de la vie quotidienne."
+        }
+      ]
+    },
+    {
+      "id": "curious",
+      "emoji": "🧐",
+      "mood": "I want to satisfy my curiosity and learn something new and fascinating",
+      "mood_fr": "Je veux satisfaire ma curiosité et apprendre quelque chose de nouveau et fascinant",
+      "description": "I’m looking for something that piques my interest and expands my knowledge.",
+      "description_fr": "Je veux quelque chose qui éveille mon intérêt et élargit mes connaissances.",
+      "submoods": [
+        {
+          "id": "curious-history",
+          "submood": "I want to uncover intriguing stories and facts from history",
+          "submood_fr": "Je veux découvrir des histoires intrigantes de l’histoire",
+          "description": "I want a story that reveals fascinating historical events and figures.",
+          "description_fr": "Je veux une histoire qui révèle des événements et des personnages historiques fascinants."
+        },
+        {
+          "id": "curious-science",
+          "submood": "I want to explore mind-blowing scientific discoveries and concepts",
+          "submood_fr": "Je veux explorer des découvertes scientifiques époustouflantes",
+          "description": "I want a story that introduces me to incredible scientific ideas and breakthroughs.",
+          "description_fr": "Je veux une histoire qui me présente des idées et des avancées scientifiques incroyables."
+        },
+        {
+          "id": "curious-culture",
+          "submood": "I want to dive into the richness of different cultures and traditions around the world",
+          "submood_fr": "Je veux plonger dans la richesse des différentes cultures du monde",
+          "description": "I want a story that immerses me in diverse cultural experiences and perspectives.",
+          "description_fr": "Je veux une histoire qui m’immerge dans des expériences culturelles diverses."
+        }
+      ]
+    },
+    {
+      "id": "romance",
+      "emoji": "❤️",
+      "mood": "I want to feel the warmth and passion of a romantic connection",
+      "mood_fr": "Je veux ressentir la chaleur d’une connexion romantique",
+      "description": "I’m looking for something that captures the emotions and excitement of romance.",
+      "description_fr": "Je veux quelque chose qui capture les émotions et l’excitation de la romance.",
+      "submoods": [
+        {
+          "id": "romance-heartwarming",
+          "submood": "I want a sweet and heartwarming love story that makes me feel good",
+          "submood_fr": "Je veux une histoire d’amour douce et réconfortante",
+          "description": "I want a story that leaves me with a warm, fuzzy feeling.",
+          "description_fr": "Je veux une histoire qui me laisse un sentiment chaleureux."
+        },
+        {
+          "id": "romance-passionate",
+          "submood": "I want an intense and passionate romance that sweeps me off my feet",
+          "submood_fr": "Je veux une romance intense et passionnée",
+          "description": "I want a story that ignites strong emotions and chemistry.",
+          "description_fr": "Je veux une histoire qui déclenche des émotions fortes et de la chimie."
+        },
+        {
+          "id": "romance-complex",
+          "submood": "I want a complex and realistic romance that explores the ups and downs of relationships",
+          "submood_fr": "Je veux une romance complexe et réaliste",
+          "description": "I want a story that delves into the complexities of love and relationships.",
+          "description_fr": "Je veux une histoire qui explore les complexités de l’amour et des relations."
+        }
+      ]
+    },
+    {
+      "id": "fun",
+      "emoji": "🎉",
+      "mood": "I want to have fun and enjoy a lighthearted experience",
+      "mood_fr": "Je veux m’amuser et profiter d’une expérience légère",
+      "description": "I’m looking for something entertaining and enjoyable that lifts my spirits.",
+      "description_fr": "Je veux quelque chose de divertissant et agréable qui me remonte le moral.",
+      "submoods": [
+        {
+          "id": "fun-comedy",
+          "submood": "I want to laugh and have a good time with comedy",
+          "submood_fr": "Je veux rire et passer un bon moment avec de la comédie",
+          "description": "I want a story that delivers humor and keeps me smiling.",
+          "description_fr": "Je veux une histoire qui offre de l’humour et me fait sourire."
+        },
+        {
+          "id": "fun-adventure",
+          "submood": "I want to go on an exciting adventure that’s full of fun and surprises",
+          "submood_fr": "Je veux vivre une aventure excitante pleine de surprises",
+          "description": "I want a story that takes me on a thrilling and enjoyable journey.",
+          "description_fr": "Je veux une histoire qui m’emmène dans un voyage passionnant et agréable."
+        },
+        {
+          "id": "fun-lighthearted",
+          "submood": "I want a lighthearted story that’s easy to enjoy and makes me feel good",
+          "submood_fr": "Je veux une histoire légère et facile à apprécier",
+          "description": "I want something that’s uplifting, positive, and just plain fun.",
+          "description_fr": "Je veux quelque chose de positif, réconfortant et tout simplement amusant."
+        }
+      ]
+    },
+    {
+      "id": "deep",
+      "emoji": "🌌",
+      "mood": "I want to explore profound and thought-provoking themes that resonate on a deeper level",
+      "mood_fr": "Je veux explorer des thèmes profonds et stimulants qui résonnent à un niveau plus profond",
+      "description": "I’m looking for something that challenges me intellectually and emotionally.",
+      "description_fr": "Je veux quelque chose qui me met au défi intellectuellement et émotionnellement.",
+      "submoods": [
+        {
+          "id": "deep-existential",
+          "submood": "I want to delve into existential questions about the meaning of life and our place in the universe",
+          "submood_fr": "Je veux plonger dans des questions existentielles sur le sens de la vie et notre place dans l’univers",
+          "description": "I want a story that explores deep philosophical themes about existence.",
+          "description_fr": "Je veux une histoire qui explore des thèmes philosophiques profonds sur l’existence."
+        },
+        {
+          "id": "deep-psychological",
+          "submood": "I want to explore complex psychological themes and the depths of the human mind",
+          "submood_fr": "Je veux explorer des thèmes psychologiques complexes et les profondeurs de l’esprit humain",
+          "description": "I want a story that delves into the complexities of human psychology.",
+          "description_fr": "Je veux une histoire qui explore les complexités de la psychologie humaine."
+        },
+        {
+          "id": "deep-societal",
+          "submood": "I want to engage with thought-provoking social and political commentary that challenges my worldview",
+          "submood_fr": "Je veux un commentaire social et politique stimulant qui remet en question ma vision du monde",
+          "description": "I want a story that offers insightful commentary on society and politics.",
+          "description_fr": "Je veux une histoire qui offre un commentaire perspicace sur la société et la politique."
+        }
+      ]
+    },
+    {
+      "id": "unique",
+      "emoji": "🦄",
+      "mood": "I want to experience something truly unique and original that stands out from the crowd",
+      "mood_fr": "Je veux vivre quelque chose de vraiment unique et original qui se démarque",
+      "description": "I’m looking for something that breaks the mold and offers a fresh perspective.",
+      "description_fr": "Je veux quelque chose qui sort des sentiers battus et offre une perspective nouvelle.",
+      "submoods": [
+        {
+          "id": "unique-genreblend",
+          "submood": "I want to experience a unique blend of genres that creates something new and unexpected",
+          "submood_fr": "Je veux vivre un mélange de genres unique qui crée quelque chose de nouveau et inattendu",
+          "description": "I want a story that combines different genres in an innovative way.",
+          "description_fr": "Je veux une histoire qui combine différents genres de manière innovante."
+        },
+        {
+          "id": "unique-narrative",
+          "submood": "I want to experience a story with a unique narrative structure or storytelling style",
+          "submood_fr": "Je veux vivre une histoire avec une structure narrative ou un style de narration unique",
+          "description": "I want a story that experiments with how the story is told.",
+          "description_fr": "Je veux une histoire qui expérimente la façon dont l’histoire est racontée."
+        },
+        {
+          "id": "unique-concept",
+          "submood": "I want to experience a story built around a truly original and innovative concept or premise",
+          "submood_fr": "Je veux vivre une histoire basée sur un concept ou une prémisse vraiment originale et innovante",
+          "description": "I want a story that introduces me to an entirely new idea or world.",
+          "description_fr": "Je veux une histoire qui me présente une idée ou un monde entièrement nouveau."
+        }
+      ]
+    },
+    {
+      "id": "think",
+      "emoji": "🧠",
+      "mood": "I want to be mentally engaged and challenged",
+      "mood_fr": "Je veux être stimulé intellectuellement",
+      "description": "I’m looking for something that makes me think deeply. I want complex ideas, layered meaning, or puzzles that unfold over time.",
+      "description_fr": "Je veux quelque chose qui me fait réfléchir profondément, avec des idées complexes ou des énigmes à résoudre.",
+      "submoods": [
+        {
+          "id": "think-mindbend",
+          "submood": "I want something mind-blowing that changes how I think",
+          "submood_fr": "Je veux quelque chose qui me retourne l’esprit",
+          "description": "I want a story with unexpected structure or ideas that challenge my perception and stay with me afterward.",
+          "description_fr": "Je veux une histoire qui change ma perception et me marque durablement."
+        },
+        {
+          "id": "think-philosophical",
+          "submood": "I want to explore deep questions without clear answers",
+          "submood_fr": "Je veux explorer des questions profondes sans réponse claire",
+          "description": "I want something reflective that explores themes like existence, identity, or morality, without giving simple answers.",
+          "description_fr": "Je veux une œuvre qui explore des thèmes comme l’existence ou la morale sans réponses faciles."
+        },
+        {
+          "id": "think-investigative",
+          "submood": "I want to solve a mystery and piece things together myself",
+          "submood_fr": "Je veux résoudre un mystère moi-même",
+          "description": "I want to actively follow clues, analyze details, and build my own understanding as the story unfolds.",
+          "description_fr": "Je veux suivre des indices et construire ma propre compréhension au fil de l’histoire."
+        }
+      ]
+    },
+    {
+      "id": "relax",
+      "emoji": "😌",
+      "mood": "I want to feel calm, comfortable, and mentally at ease",
+      "mood_fr": "Je veux me sentir calme et détendu",
+      "description": "I’m looking for something easy, soothing, and undemanding. I want to relax without needing to focus or feel strong emotions.",
+      "description_fr": "Je veux quelque chose de simple et apaisant, sans effort ni charge émotionnelle.",
+      "submoods": [
+        {
+          "id": "relax-cozy",
+          "submood": "I want something warm and comforting where everything turns out well",
+          "submood_fr": "Je veux quelque chose de chaleureux et rassurant",
+          "description": "I want a gentle and positive experience that leaves me feeling relaxed and reassured.",
+          "description_fr": "Je veux une expérience douce et positive qui me rassure."
+        },
+        {
+          "id": "relax-background",
+          "submood": "I want something easy to watch without giving it full attention",
+          "submood_fr": "Je veux quelque chose à regarder sans trop d’attention",
+          "description": "I want something familiar and low-effort that I can enjoy in the background.",
+          "description_fr": "Je veux quelque chose de simple et familier que je peux regarder sans me concentrer."
+        },
+        {
+          "id": "relax-nature",
+          "submood": "I want to enjoy calming and beautiful visuals of nature",
+          "submood_fr": "Je veux profiter de belles images apaisantes de la nature",
+          "description": "I want peaceful visuals that help me relax and feel connected to the natural world.",
+          "description_fr": "Je veux des images calmes et apaisantes qui me détendent."
+        }
+      ]
+    },
+    {
+      "id": "realworld",
+      "emoji": "🌍",
+      "mood": "I want to better understand real people and the world",
+      "mood_fr": "Je veux mieux comprendre le monde réel",
+      "description": "I’m looking for real-world stories that expand my perspective and help me understand people, cultures, or issues more deeply.",
+      "description_fr": "Je veux des histoires réelles qui élargissent ma vision du monde.",
+      "submoods": [
+        {
+          "id": "realworld-culture",
+          "submood": "I want to explore a culture or place different from my own",
+          "submood_fr": "Je veux découvrir une autre culture",
+          "description": "I want to experience new environments, traditions, and ways of life.",
+          "description_fr": "Je veux découvrir de nouvelles cultures et modes de vie."
+        },
+        {
+          "id": "realworld-social",
+          "submood": "I want to understand social issues or injustices more deeply",
+          "submood_fr": "Je veux comprendre des enjeux sociaux",
+          "description": "I want insight into real-world systems, challenges, and inequalities.",
+          "description_fr": "Je veux comprendre les systèmes et injustices du monde réel."
+        },
+        {
+          "id": "realworld-biography",
+          "submood": "I want to learn about the life of a remarkable real person",
+          "submood_fr": "Je veux découvrir la vie d’une personne remarquable",
+          "description": "I want to follow the journey of someone impactful and understand their story.",
+          "description_fr": "Je veux suivre le parcours d’une personne marquante."
+        }
+      ]
+    },
+    {
+      "id": "atmosphere",
+      "emoji": "🌙",
+      "mood": "I want to experience a strong, immersive vibe or mood",
+      "mood_fr": "Je veux ressentir une ambiance immersive",
+      "description": "I’m looking for something driven by mood, visuals, or atmosphere rather than plot.",
+      "description_fr": "Je veux quelque chose centré sur l’ambiance et les sensations.",
+      "submoods": [
+        {
+          "id": "atmosphere-noir",
+          "submood": "I want something dark, stylish, and emotionally intense",
+          "submood_fr": "Je veux quelque chose de sombre et stylé",
+          "description": "I want a moody and visually rich experience with complex characters.",
+          "description_fr": "Je veux une ambiance sombre avec des personnages complexes."
+        },
+        {
+          "id": "atmosphere-surreal",
+          "submood": "I want something surreal and visually thought-provoking",
+          "submood_fr": "Je veux quelque chose de surréaliste et marquant",
+          "description": "I want an abstract and unusual experience focused on feeling and imagery.",
+          "description_fr": "Je veux une expérience visuelle et émotionnelle hors du commun."
+        },
+        {
+          "id": "atmosphere-scifi",
+          "submood": "I want sci-fi that makes me reflect on existence and my place in the universe",
+          "submood_fr": "Je veux une sci-fi qui me fait réfléchir à l’existence",
+          "description": "I want a thoughtful science fiction experience that explores big ideas and leaves me reflecting.",
+          "description_fr": "Je veux une science-fiction qui me fait réfléchir profondément."
+        }
+      ]
     }
   ]
 }
