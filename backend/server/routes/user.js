@@ -318,6 +318,22 @@ router.get('/public/:userId', verifyToken, (req, res) => {
       tags: JSON.parse(playlist.tags || '[]'),
     }))
 
+    const mates = db.prepare(`
+      SELECT u.id, u.username, u.avatar, u.plan, u.watcher_title
+      FROM social_connections sc
+      JOIN users u ON u.id = sc.following_id
+      WHERE sc.follower_id = ?
+        AND COALESCE(u.is_discoverable, 1) != 0
+      ORDER BY u.username COLLATE NOCASE ASC
+      LIMIT 30
+    `).all(targetId).map((mate) => ({
+      id: mate.id,
+      username: mate.username,
+      avatar: mate.avatar || 'T',
+      plan: mate.plan,
+      watcher_title: mate.watcher_title || null,
+    }))
+
     res.json({
       user: {
         id:            user.id,
@@ -334,6 +350,7 @@ router.get('/public/:userId', verifyToken, (req, res) => {
       watchlist: getList('watchlist', 'privacy_watchlist'),
       watched:   getList('watched',   'privacy_watched'),
       posts,
+      mates,
     })
   } catch (err) {
     console.error('Get public profile error:', err.message)
