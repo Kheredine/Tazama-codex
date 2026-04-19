@@ -15,7 +15,6 @@ const apiFetch = async (path, options = {}) => {
 
   const res = await fetch(apiUrl(path), { ...options, headers })
 
-  // Guard: if server returned HTML (e.g. 404 page) instead of JSON
   const contentType = res.headers.get('content-type') || ''
   if (!contentType.includes('application/json')) {
     throw new Error(`Server error (${res.status}) — please restart the backend server`)
@@ -44,17 +43,14 @@ export const initAuth = async () => {
     const data = await apiFetch('/api/auth/me')
     user.value = data.user
     applyTheme(data.user.plan)
-    // Sync library from DB after verifying auth
     await syncLibraryOnLogin()
   } catch {
-    // Token invalid or expired — clear it
     storeToken(null)
     user.value = null
     applyTheme('standard')
   }
 }
 
-// Lazy-import to avoid circular deps
 const syncLibraryOnLogin = async () => {
   try {
     const { useUserLibrary } = await import('./useUserLibrary.js')
@@ -66,10 +62,11 @@ const syncLibraryOnLogin = async () => {
 }
 
 // ── login ──────────────────────────────────────────────────────────────────
-export const login = async (email, password) => {
+// Accepts username + 4-digit passcode
+export const login = async (username, passcode) => {
   const data = await apiFetch('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ username: username.trim(), passcode: String(passcode) }),
   })
   storeToken(data.token)
   user.value = data.user
@@ -79,14 +76,12 @@ export const login = async (email, password) => {
 }
 
 // ── register ───────────────────────────────────────────────────────────────
-export const register = async (email, username, password) => {
+// Accepts only username. Returns { passcode } — user is NOT signed in yet.
+export const register = async (username) => {
   const data = await apiFetch('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, username, password }),
+    body: JSON.stringify({ username: username.trim() }),
   })
-  storeToken(data.token)
-  user.value = data.user
-  applyTheme(data.user.plan)
   return data
 }
 
@@ -96,7 +91,6 @@ export const logout = async () => {
   storeToken(null)
   user.value = null
   applyTheme('standard')
-  // Clear local library state
   try {
     const { useUserLibrary } = await import('./useUserLibrary.js')
     const lib = useUserLibrary()
@@ -114,6 +108,14 @@ export const unlockPremium = async (answers) => {
   user.value = data.user
   applyTheme('premium')
   return data
+}
+
+// ── changePasscode ─────────────────────────────────────────────────────────
+export const changePasscode = async (currentPasscode, newPasscode) => {
+  return apiFetch('/api/user/passcode', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPasscode: String(currentPasscode), newPasscode: String(newPasscode) }),
+  })
 }
 
 // ── updateUser — refresh local user state after profile update ─────────────
@@ -136,6 +138,7 @@ export function useAuth() {
     register,
     logout,
     unlockPremium,
+    changePasscode,
     updateUser,
     apiFetch,
   }

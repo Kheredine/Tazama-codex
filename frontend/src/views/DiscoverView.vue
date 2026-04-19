@@ -4,12 +4,14 @@ import { useRouter } from 'vue-router'
 import { useUserLibrary } from '@/composables/useUserLibrary'
 import { useUserPreferences } from '@/composables/useUserPreferences'
 import { useI18n } from '@/composables/useI18n'
+import { useWatchHistory } from '@/composables/useWatchHistory'
 import { apiUrl } from '@/config/api'
 
 const router = useRouter()
 const { liked, watchlist, watched } = useUserLibrary()
 const { getTopMoods, getMoodForHour, interactionCount } = useUserPreferences()
 const { t, lang } = useI18n()
+const { streamHistory } = useWatchHistory()
 
 const TMDB_KEY  = import.meta.env.VITE_TMDB_API_KEY
 const TMDB_BASE = 'https://api.themoviedb.org/3'
@@ -233,6 +235,33 @@ onMounted(() => {
           </div>
         </div>
       </template>
+    </section>
+
+    <!-- ── Recently Watched ──────────────────────────────────────── -->
+    <section v-if="streamHistory.length">
+      <h2 class="section-title">▶️ Recently Watched</h2>
+      <div class="scroll-row">
+        <div
+          v-for="item in streamHistory"
+          :key="`rw-${item.type}-${item.id}`"
+          class="scroll-card"
+          @click="router.push({ name: 'detail', params: { type: item.type, id: item.id } })"
+        >
+          <div class="poster-wrap">
+            <img v-if="item.poster" :src="item.poster" :alt="item.title" class="poster-img" />
+            <div v-else class="poster-placeholder"><i class="fa-solid fa-play"></i></div>
+            <div class="poster-overlay"></div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background: rgba(124,58,237,0.85);">
+                <i class="fa-solid fa-play text-white text-xs ml-0.5"></i>
+              </div>
+            </div>
+            <span v-if="item.type === 'tv' && item.episode" class="coming-date-badge">S{{ item.season }}E{{ item.episode }}</span>
+          </div>
+          <p class="card-title">{{ item.title }}</p>
+          <p v-if="item.watchedAt" class="card-year">{{ new Date(item.watchedAt).toLocaleDateString() }}</p>
+        </div>
+      </div>
     </section>
 
     <!-- ── Trending Now ────────────────────────────────────────────── -->

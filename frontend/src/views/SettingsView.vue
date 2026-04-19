@@ -8,7 +8,7 @@ import { useUserPreferences } from '@/composables/useUserPreferences'
 import { useWatcherTitle } from '@/composables/useWatcherTitle'
 
 const router = useRouter()
-const { user, isPremium, logout, apiFetch, updateUser } = useAuth()
+const { user, isPremium, logout, apiFetch, updateUser, changePasscode } = useAuth()
 const { t, lang, setLang } = useI18n()
 const { liked, watchlist, watched, history } = useUserLibrary()
 const { prefs, getTopMoods, interactionCount } = useUserPreferences()
@@ -23,7 +23,6 @@ const saveSuccess = ref(false)
 
 const editForm = ref({
   username: '',
-  email: '',
   avatar: '',
   bio: '',
   is_discoverable: true,
@@ -35,7 +34,6 @@ const editForm = ref({
 const startEdit = () => {
   editForm.value = {
     username: user.value?.username || '',
-    email: user.value?.email || '',
     avatar: user.value?.avatar || 'T',
     bio: user.value?.bio || '',
     is_discoverable: !isPremium.value ? true : (user.value?.is_discoverable !== 0),
@@ -72,30 +70,29 @@ const saveProfile = async () => {
   }
 }
 
-const pwForm = ref({ current: '', newPw: '' })
-const pwLoading = ref(false)
-const pwError = ref('')
-const pwSuccess = ref(false)
+const pcForm = ref({ current: '', newCode: '' })
+const pcLoading = ref(false)
+const pcError = ref('')
+const pcSuccess = ref(false)
 
-const changePassword = async () => {
-  pwLoading.value = true
-  pwError.value = ''
-  pwSuccess.value = false
+const submitChangePasscode = async () => {
+  pcLoading.value = true
+  pcError.value = ''
+  pcSuccess.value = false
+  if (!/^\d{4}$/.test(pcForm.value.newCode)) {
+    pcError.value = 'New passcode must be exactly 4 digits'
+    pcLoading.value = false
+    return
+  }
   try {
-    await apiFetch('/api/user/password', {
-      method: 'PUT',
-      body: JSON.stringify({
-        currentPassword: pwForm.value.current,
-        newPassword: pwForm.value.newPw,
-      }),
-    })
-    pwForm.value = { current: '', newPw: '' }
-    pwSuccess.value = true
-    setTimeout(() => { pwSuccess.value = false }, 3000)
+    await changePasscode(pcForm.value.current, pcForm.value.newCode)
+    pcForm.value = { current: '', newCode: '' }
+    pcSuccess.value = true
+    setTimeout(() => { pcSuccess.value = false }, 3000)
   } catch (err) {
-    pwError.value = err.message || 'Failed to update password'
+    pcError.value = err.message || 'Failed to update passcode'
   } finally {
-    pwLoading.value = false
+    pcLoading.value = false
   }
 }
 
@@ -238,7 +235,6 @@ onMounted(async () => {
           </div>
 
           <div class="mt-3 space-y-1">
-            <p class="text-white/70 text-sm break-all">{{ user?.email }}</p>
             <p v-if="user?.bio" class="text-white/45 text-sm italic">{{ user?.bio }}</p>
             <p class="text-white/25 text-xs">{{ t.memberSince }} {{ memberSince }}</p>
           </div>
@@ -260,11 +256,11 @@ onMounted(async () => {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div class="profile-chip">
           <p class="profile-chip__label">Account</p>
-          <p class="profile-chip__text">Change username, email, avatar, and bio.</p>
+          <p class="profile-chip__text">Change username, avatar, and bio.</p>
         </div>
         <div class="profile-chip">
           <p class="profile-chip__label">Security</p>
-          <p class="profile-chip__text">Update your password anytime below.</p>
+          <p class="profile-chip__text">Update your 4-digit passcode anytime below.</p>
         </div>
         <div class="profile-chip">
           <p class="profile-chip__label">{{ t.reelMates }}</p>
@@ -289,7 +285,7 @@ onMounted(async () => {
     <section class="settings-card" v-if="editing">
       <div class="flex items-center justify-between gap-3">
         <h2 class="settings-label">Account Details</h2>
-        <span class="text-xs text-white/30">Change name, email, avatar, and privacy.</span>
+        <span class="text-xs text-white/30">Change name, avatar, and privacy.</span>
       </div>
 
       <div>
@@ -308,16 +304,9 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="flex flex-col gap-1.5">
-          <label class="settings-field-label">{{ t.username }}</label>
-          <input v-model="editForm.username" type="text" class="settings-input" />
-        </div>
-
-        <div class="flex flex-col gap-1.5">
-          <label class="settings-field-label">{{ t.emailAddress }}</label>
-          <input v-model="editForm.email" type="email" class="settings-input" />
-        </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="settings-field-label">{{ t.username }}</label>
+        <input v-model="editForm.username" type="text" class="settings-input" />
       </div>
 
       <div class="flex flex-col gap-1.5">
@@ -412,29 +401,45 @@ onMounted(async () => {
     </Transition>
 
     <section class="settings-card">
-      <h2 class="settings-label">{{ t.changePassword }}</h2>
+      <h2 class="settings-label">Change Passcode</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="flex flex-col gap-1.5">
-          <label class="settings-field-label">{{ t.currentPassword }}</label>
-          <input v-model="pwForm.current" type="password" class="settings-input" autocomplete="current-password" />
+          <label class="settings-field-label">Current Passcode</label>
+          <input
+            v-model="pcForm.current"
+            type="password"
+            class="settings-input tracking-widest"
+            autocomplete="current-password"
+            maxlength="4"
+            inputmode="numeric"
+            placeholder="• • • •"
+          />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="settings-field-label">{{ t.newPassword }}</label>
-          <input v-model="pwForm.newPw" type="password" class="settings-input" autocomplete="new-password" placeholder="Min. 6 characters" />
+          <label class="settings-field-label">New Passcode</label>
+          <input
+            v-model="pcForm.newCode"
+            type="password"
+            class="settings-input tracking-widest"
+            autocomplete="new-password"
+            maxlength="4"
+            inputmode="numeric"
+            placeholder="• • • •"
+          />
         </div>
       </div>
 
-      <div v-if="pwError" class="message message--error">{{ pwError }}</div>
-      <div v-if="pwSuccess" class="message message--success"><i class="fa-solid fa-check mr-1.5"></i>Password updated successfully.</div>
+      <div v-if="pcError" class="message message--error">{{ pcError }}</div>
+      <div v-if="pcSuccess" class="message message--success"><i class="fa-solid fa-check mr-1.5"></i>Passcode updated successfully.</div>
 
       <button
         class="py-2.5 rounded-xl text-sm font-semibold transition self-start px-5"
-        :class="pwForm.current && pwForm.newPw ? 'bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 border border-purple-600/30' : 'bg-white/5 text-white/25 cursor-not-allowed'"
-        :disabled="!pwForm.current || !pwForm.newPw || pwLoading"
-        @click="changePassword"
+        :class="pcForm.current && pcForm.newCode ? 'bg-purple-600/30 text-purple-300 hover:bg-purple-600/50 border border-purple-600/30' : 'bg-white/5 text-white/25 cursor-not-allowed'"
+        :disabled="!pcForm.current || !pcForm.newCode || pcLoading"
+        @click="submitChangePasscode"
       >
-        <i v-if="pwLoading" class="fa-solid fa-circle-notch fa-spin mr-1.5"></i>
-        {{ t.changePassword }}
+        <i v-if="pcLoading" class="fa-solid fa-circle-notch fa-spin mr-1.5"></i>
+        Change Passcode
       </button>
     </section>
 
