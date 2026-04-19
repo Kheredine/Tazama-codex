@@ -80,6 +80,13 @@ onMounted(async () => {
 
 const title     = computed(() => media.value?.title || media.value?.name || '')
 const year      = computed(() => (media.value?.release_date || media.value?.first_air_date || '').split('-')[0])
+
+const releaseDate = computed(() => media.value?.release_date || media.value?.first_air_date || null)
+const isUpcoming  = computed(() => releaseDate.value ? new Date(releaseDate.value) > new Date() : false)
+const formattedReleaseDate = computed(() => {
+  if (!releaseDate.value) return ''
+  return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(releaseDate.value))
+})
 const overview  = computed(() => media.value?.overview || '')
 const backdrop  = computed(() => media.value?.backdrop_path ? `${IMG_BASE}w1280${media.value.backdrop_path}` : null)
 const poster    = computed(() => media.value?.poster_path   ? `${IMG_BASE}w500${media.value.poster_path}`   : null)
@@ -318,6 +325,23 @@ const saveToPlaylist = async (playlist) => {
               :key="genre.id"
               class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs"
             >{{ genre.name }}</span>
+          </div>
+
+          <!-- Release date pill -->
+          <div v-if="formattedReleaseDate">
+            <span
+              v-if="isUpcoming"
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#7c3aed]/20 border border-[#7c3aed]/35 text-[#a78bfa] text-xs font-medium"
+            >
+              <i class="fa-solid fa-calendar-plus text-[10px]"></i>
+              Sortie le {{ formattedReleaseDate }}
+            </span>
+            <span
+              v-else
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/8 border border-white/12 text-white/50 text-xs font-medium"
+            >
+              Sorti le {{ formattedReleaseDate }}
+            </span>
           </div>
 
           <!-- Country of origin -->

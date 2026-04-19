@@ -244,8 +244,34 @@ onUnmounted(() => {
 
     <!-- ── Subtitle / Language Panel ─────────────────────────────────────────── -->
     <Transition name="slide-down">
-      <div v-if="showLangPanel" class="panel border-b border-white/8 px-4 py-4">
-        <p class="panel-label mb-3">Subtitle Language</p>
+      <div v-if="showLangPanel" class="panel border-b border-white/8 px-4 py-4 space-y-3">
+
+        <!-- Info note -->
+        <div class="rounded-xl bg-white/3 border border-white/7 px-3 py-2.5 space-y-1.5 text-[11px] leading-relaxed">
+          <p class="text-white/55">
+            <span class="text-white/75 font-semibold">Sous-titres</span> — transmis via URL.
+            Fonctionne de manière fiable avec <span class="text-[#a78bfa]">VidSrc To</span> (<code class="text-white/40">ds_lang</code>),
+            <span class="text-[#a78bfa]">VidSrc Me</span> &amp; <span class="text-[#a78bfa]">MovieAPI</span> (<code class="text-white/40">sub_lang</code>).
+          </p>
+          <p class="text-white/35">
+            <span class="text-white/55 font-semibold">Audio (VF)</span> — impossible à forcer depuis l'extérieur.
+            Utilisez le sélecteur de piste audio intégré au lecteur si une version doublée est disponible.
+          </p>
+        </div>
+
+        <!-- Warning when current server has no subtitle param -->
+        <div
+          v-if="!currentServer.subParam"
+          class="flex items-start gap-2 rounded-xl bg-amber-500/8 border border-amber-500/20 px-3 py-2.5"
+        >
+          <i class="fa-solid fa-triangle-exclamation text-amber-400/70 text-xs mt-0.5 shrink-0"></i>
+          <p class="text-[11px] text-amber-200/55 leading-relaxed">
+            <span class="font-semibold text-amber-200/75">{{ currentServer.name }}</span> ne prend pas en charge les sous-titres via URL.
+            Passez sur VidSrc To ou VidSrc Me pour les sous-titres français.
+          </p>
+        </div>
+
+        <p class="panel-label">Langue des sous-titres</p>
         <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scroll">
           <button
             v-for="lang in SUBTITLE_LANGUAGES"
@@ -257,6 +283,7 @@ onUnmounted(() => {
             {{ lang.name }}
           </button>
         </div>
+
       </div>
     </Transition>
 
