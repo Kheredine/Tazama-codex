@@ -174,6 +174,9 @@ db.exec(`
 try { db.exec(`ALTER TABLE users ADD COLUMN watcher_level INTEGER NOT NULL DEFAULT 0`) } catch { /* already exists */ }
 try { db.exec(`ALTER TABLE users ADD COLUMN watcher_title TEXT DEFAULT NULL`) } catch { /* already exists */ }
 
+// ── Username uniqueness (case-insensitive) ──────────────────────────────────
+db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(lower(username))`)
+
 // ── Task 9: Playlists ───────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS playlists (

@@ -183,7 +183,6 @@ onUnmounted(() => clearInterval(unreadTimer))
           autocorrect="off"
           autocapitalize="off"
           spellcheck="false"
-          name="tazama-q"
           :placeholder="t.searchPlaceholder"
           class="bg-transparent focus:outline-none w-full text-sm text-white/80 placeholder:text-white/30"
           @focus="searchActive = true"

@@ -38,6 +38,9 @@ const routes = [
     component: () => import('@/views/AnalyticsView.vue'),
     meta: { requiresPremium: true },
   },
+
+  // ── 404 catch-all ──────────────────────────────────────────────────────────
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/NotFoundView.vue'), meta: { public: true } },
 ]
 
 const router = createRouter({

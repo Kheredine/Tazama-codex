@@ -130,12 +130,11 @@ router.post('/preferences/sync', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/user/profile ──────────────────────────────────────────────────
-// Update username, email, avatar, bio, privacy settings
+// Update username, avatar, bio, privacy settings
 router.put('/profile', verifyToken, async (req, res) => {
   try {
     const {
       username,
-      email,
       avatar,
       bio,
       is_discoverable,
@@ -145,20 +144,12 @@ router.put('/profile', verifyToken, async (req, res) => {
     } = req.body
     const userId = req.user.id
 
-    // Validate new email if changing
-    if (email && email !== req.user.email) {
-      if (!email.includes('@')) return res.status(400).json({ error: 'Invalid email address' })
-      const existing = db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').get(email.toLowerCase(), userId)
-      if (existing) return res.status(409).json({ error: 'Email already in use' })
-    }
-
     const current = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
     if (!current) return res.status(404).json({ error: 'User not found' })
 
     db.prepare(`
       UPDATE users SET
         username          = ?,
-        email             = ?,
         avatar            = ?,
         bio               = ?,
         is_discoverable   = ?,
@@ -168,7 +159,6 @@ router.put('/profile', verifyToken, async (req, res) => {
       WHERE id = ?
     `).run(
       (username || current.username).trim(),
-      (email || current.email).toLowerCase(),
       avatar    ?? current.avatar    ?? '🎬',
       bio       ?? current.bio       ?? '',
       is_discoverable !== undefined ? (is_discoverable ? 1 : 0) : current.is_discoverable,
@@ -186,32 +176,33 @@ router.put('/profile', verifyToken, async (req, res) => {
   }
 })
 
-// ── PUT /api/user/password ─────────────────────────────────────────────────
-router.put('/password', verifyToken, async (req, res) => {
+// ── PUT /api/user/passcode ─────────────────────────────────────────────────
+// Change 4-digit passcode
+router.put('/passcode', verifyToken, async (req, res) => {
   try {
-    const { currentPassword, newPassword } = req.body
+    const { currentPasscode, newPasscode } = req.body
     const userId = req.user.id
 
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Both current and new password are required' })
+    if (!currentPasscode || !newPasscode) {
+      return res.status(400).json({ error: 'Both current and new passcode are required' })
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters' })
+    if (!/^\d{4}$/.test(String(newPasscode))) {
+      return res.status(400).json({ error: 'Passcode must be exactly 4 digits' })
     }
 
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
     if (!user) return res.status(404).json({ error: 'User not found' })
 
-    const valid = await bcrypt.compare(currentPassword, user.password_hash)
-    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' })
+    const valid = await bcrypt.compare(String(currentPasscode), user.password_hash)
+    if (!valid) return res.status(401).json({ error: 'Current passcode is incorrect' })
 
-    const hash = await bcrypt.hash(newPassword, 12)
+    const hash = await bcrypt.hash(String(newPasscode), 12)
     db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId)
 
     res.json({ ok: true })
   } catch (err) {
-    console.error('Update password error:', err.message)
-    res.status(500).json({ error: 'Failed to update password' })
+    console.error('Update passcode error:', err.message)
+    res.status(500).json({ error: 'Failed to update passcode' })
   }
 })
 

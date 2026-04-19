@@ -2,13 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserLibrary } from '@/composables/useUserLibrary'
-import { useWatchHistory } from '@/composables/useWatchHistory'
 import { useI18n } from '@/composables/useI18n'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { watchlist, watched, liked, history, toggleWatchlist, toggleWatched, toggleLike, addHistory } = useUserLibrary()
-const { streamHistory, removeFromStreamHistory, clearStreamHistory } = useWatchHistory()
 const { t } = useI18n()
 const { apiFetch } = useAuth()
 
@@ -19,7 +17,6 @@ const tabs = [
   { id: 'watchlist', icon: 'fa-bookmark',            labelKey: 'myWatchlist' },
   { id: 'watched',   icon: 'fa-check',               labelKey: 'myWatched'   },
   { id: 'history',   icon: 'fa-clock-rotate-left',   labelKey: 'myHistory'   },
-  { id: 'streaming', icon: 'fa-play-circle',          labelKey: 'myStreaming'  },
   { id: 'playlists', icon: 'fa-list',                labelKey: 'myPlaylists' },
 ]
 
@@ -36,7 +33,6 @@ const countFor = (tabId) => {
   if (tabId === 'watchlist') return watchlist.value.length
   if (tabId === 'watched')   return watched.value.length
   if (tabId === 'history')   return history.value.length
-  if (tabId === 'streaming') return streamHistory.value.length
   if (tabId === 'playlists') return playlists.value.length
   return 0
 }
@@ -312,8 +308,8 @@ const onTabChange = (tabId) => {
       </button>
     </div>
 
-    <!-- Content: Library tabs (liked/watchlist/watched) -->
-    <div v-show="activeTab !== 'history' && activeTab !== 'playlists' && activeTab !== 'streaming'">
+    <!-- Content: Library tabs (liked/watchlist/watched/history-grid) -->
+    <div v-show="activeTab !== 'history' && activeTab !== 'playlists'">
       <div v-show="currentList.length === 0"
            class="flex flex-col items-center gap-4 py-20 text-white/30">
         <i class="fa-solid fa-box-open text-4xl"></i>
@@ -363,71 +359,6 @@ const onTabChange = (tabId) => {
               <i class="fa-solid fa-xmark text-[10px]"></i> Unmark
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content: Streaming History -->
-    <div v-show="activeTab === 'streaming'" class="flex flex-col gap-4">
-      <div class="flex items-center justify-between">
-        <p class="text-white/40 text-sm">Titles you've watched directly in Tazama.</p>
-        <button
-          v-if="streamHistory.length"
-          type="button"
-          class="text-xs text-red-400/60 hover:text-red-400 transition border border-red-500/20 hover:border-red-500/40 px-3 py-1.5 rounded-lg"
-          @click="clearStreamHistory"
-        >
-          Clear All
-        </button>
-      </div>
-
-      <div v-if="!streamHistory.length" class="flex flex-col items-center gap-4 py-20 text-white/30">
-        <i class="fa-solid fa-play-circle text-4xl"></i>
-        <p class="text-sm">No streams yet — watch something on a detail page!</p>
-      </div>
-
-      <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        <div
-          v-for="item in streamHistory"
-          :key="`${item.type}-${item.id}`"
-          class="group relative flex flex-col rounded-xl overflow-hidden cursor-pointer bg-white/5 border border-white/10 hover:border-red-500/30 transition"
-          @click="router.push({ name: 'detail', params: { type: item.type, id: item.id } })"
-        >
-          <div class="relative w-full h-48 overflow-hidden bg-[#12121A]">
-            <img
-              v-if="item.poster"
-              :src="item.poster"
-              :alt="item.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-            />
-            <div v-else class="w-full h-full flex items-center justify-center text-white/20">
-              <i class="fa-solid fa-film text-2xl"></i>
-            </div>
-            <!-- Play overlay -->
-            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-              <div class="w-10 h-10 rounded-full bg-red-500/90 flex items-center justify-center">
-                <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
-              </div>
-            </div>
-            <!-- TV badge -->
-            <div v-if="item.type === 'tv' && item.episode" class="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-black/70 text-[10px] text-white/70">
-              S{{ item.season }} E{{ item.episode }}
-            </div>
-          </div>
-          <div class="p-3 flex flex-col gap-1 flex-1">
-            <p class="text-white/90 text-xs font-semibold line-clamp-2">{{ item.title }}</p>
-            <p v-if="item.watchedAt" class="text-white/30 text-[10px] mt-auto">
-              {{ new Date(item.watchedAt).toLocaleDateString() }}
-            </p>
-          </div>
-          <!-- Remove button -->
-          <button
-            type="button"
-            class="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white/40 hover:text-red-400 transition items-center justify-center opacity-0 group-hover:opacity-100 flex"
-            @click.stop="removeFromStreamHistory(item.id, item.type)"
-          >
-            <i class="fa-solid fa-xmark text-[10px]"></i>
-          </button>
         </div>
       </div>
     </div>
