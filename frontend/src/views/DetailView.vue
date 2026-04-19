@@ -84,6 +84,15 @@ const overview  = computed(() => media.value?.overview || '')
 const backdrop  = computed(() => media.value?.backdrop_path ? `${IMG_BASE}w1280${media.value.backdrop_path}` : null)
 const poster    = computed(() => media.value?.poster_path   ? `${IMG_BASE}w500${media.value.poster_path}`   : null)
 const rating    = computed(() => media.value?.vote_average?.toFixed(1))
+
+const rawDate   = computed(() => media.value?.release_date || media.value?.first_air_date || '')
+const isUpcoming = computed(() => rawDate.value && new Date(rawDate.value) > new Date())
+const releaseLabel = computed(() => {
+  if (!rawDate.value) return ''
+  const d = new Date(rawDate.value)
+  const formatted = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  return isUpcoming.value ? `Sortie le ${formatted}` : `Sorti le ${formatted}`
+})
 const runtime   = computed(() => {
   if (type === 'movie') {
     const m = media.value?.runtime
@@ -313,6 +322,17 @@ const saveToPlaylist = async (playlist) => {
             <span v-if="year">{{ year }}</span>
             <span v-if="rating" class="text-yellow-400 font-medium">⭐ {{ rating }}</span>
             <span v-if="runtime">{{ runtime }}</span>
+            <!-- Release / coming date -->
+            <span
+              v-if="releaseLabel"
+              class="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
+              :class="isUpcoming
+                ? 'bg-purple-500/15 border-purple-500/30 text-purple-300'
+                : 'bg-white/5 border-white/10 text-white/50'"
+            >
+              <i :class="isUpcoming ? 'fa-regular fa-calendar-plus' : 'fa-regular fa-calendar-check'" class="text-[10px]"></i>
+              {{ releaseLabel }}
+            </span>
             <span
               v-for="genre in (media.genres || []).slice(0, 3)"
               :key="genre.id"

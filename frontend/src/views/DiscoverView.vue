@@ -23,6 +23,7 @@ const _series        = ref([])
 const _anime         = ref([])
 const _tvShows       = ref([])
 const _docs          = ref([])
+const _upcoming      = ref([])
 const _rowsLoaded    = ref(false)
 const _personalLoaded = ref(false)
 
@@ -34,6 +35,7 @@ const series        = _series
 const anime         = _anime
 const tvShows       = _tvShows
 const docs          = _docs
+const upcoming      = _upcoming
 
 const loadingPersonal = ref(false)
 
@@ -47,6 +49,14 @@ const tmdb = async (path, params = {}) => {
 }
 
 const grab15 = (data) => (data.results || []).slice(0, 15)
+
+// Formats a date string as "12 Jan 2026" (locale-aware short format)
+const formatReleaseDate = (dateStr) => {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const upcomingDate = (item) => item.release_date || item.first_air_date || ''
 
 // Threshold: user needs at least 3 library items OR 2 oracle sessions to get personalized recs
 const hasEnoughData = computed(() =>
@@ -63,7 +73,10 @@ const recentDate = () => {
 
 // ── Fetch all rows ─────────────────────────────────────────────────────
 const fetchAllRows = async () => {
-  const since = recentDate()
+  const since   = recentDate()
+  const today   = new Date().toISOString().split('T')[0]
+  const yearEnd = `${new Date().getFullYear()}-12-31`
+
   const [
     trendingData,
     filmsData,
@@ -71,6 +84,8 @@ const fetchAllRows = async () => {
     animeData,
     tvData,
     docsData,
+    upcomingMoviesData,
+    upcomingTvData,
   ] = await Promise.all([
     tmdb('/trending/all/week'),
     tmdb('/discover/movie', { sort_by: 'popularity.desc', 'primary_release_date.gte': since, 'vote_count.gte': '100' }),
@@ -78,6 +93,8 @@ const fetchAllRows = async () => {
     tmdb('/discover/tv',    { sort_by: 'popularity.desc', with_genres: '16', with_original_language: 'ja', 'vote_count.gte': '100' }),
     tmdb('/discover/tv',    { sort_by: 'popularity.desc', with_genres: '10764', 'first_air_date.gte': since }),
     tmdb('/discover/movie', { sort_by: 'popularity.desc', with_genres: '99', 'primary_release_date.gte': since }),
+    tmdb('/movie/upcoming', { region: 'FR' }),
+    tmdb('/discover/tv',    { sort_by: 'first_air_date.asc', 'first_air_date.gte': today, 'first_air_date.lte': yearEnd, 'vote_count.gte': '5' }),
   ])
 
   trending.value = grab15(trendingData)
@@ -86,6 +103,17 @@ const fetchAllRows = async () => {
   anime.value    = grab15(animeData)
   tvShows.value  = grab15(tvData)
   docs.value     = grab15(docsData)
+
+  // Merge upcoming movies + TV, sort by release date ascending, cap at 15
+  const upMovies = (upcomingMoviesData.results || [])
+    .filter(i => i.poster_path)
+    .map(i => ({ ...i, _mediaType: 'movie' }))
+  const upTv = (upcomingTvData.results || [])
+    .filter(i => i.poster_path)
+    .map(i => ({ ...i, _mediaType: 'tv' }))
+  upcoming.value = [...upMovies, ...upTv]
+    .sort((a, b) => (upcomingDate(a) > upcomingDate(b) ? 1 : -1))
+    .slice(0, 15)
 }
 
 // ── Personalized "For You" ─────────────────────────────────────────────
@@ -136,7 +164,7 @@ const fetchPersonalized = async () => {
 
 // ── Navigation ─────────────────────────────────────────────────────────
 const goDetail = (item) => {
-  const rawType  = item.media_type || item.type || 'movie'
+  const rawType  = item._mediaType || item.media_type || item.type || 'movie'
   const normType = rawType === 'movie' ? 'movie' : 'tv'
   router.push({ name: 'detail', params: { type: normType, id: item.id } })
 }
@@ -232,6 +260,33 @@ onMounted(() => {
           </div>
           <p class="card-title">{{ itemTitle(item) }}</p>
           <p class="card-year">{{ itemYear(item) }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Coming Soon ──────────────────────────────────────────────── -->
+    <section v-if="upcoming.length">
+      <h2 class="section-title">🗓️ Coming Soon</h2>
+      <div class="scroll-row">
+        <div
+          v-for="item in upcoming"
+          :key="`up-${item.id}`"
+          class="scroll-card"
+          @click="goDetail(item)"
+        >
+          <div class="poster-wrap">
+            <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
+            <div v-else class="poster-placeholder"><i class="fa-solid fa-film"></i></div>
+            <div class="poster-overlay"></div>
+            <!-- Coming soon date badge -->
+            <span v-if="upcomingDate(item)" class="coming-badge">
+              <i class="fa-regular fa-calendar text-[9px]"></i>
+              {{ formatReleaseDate(upcomingDate(item)) }}
+            </span>
+            <!-- Type pill -->
+            <span class="type-pill">{{ item._mediaType === 'tv' ? 'Series' : 'Film' }}</span>
+          </div>
+          <p class="card-title">{{ itemTitle(item) }}</p>
         </div>
       </div>
     </section>
@@ -437,6 +492,41 @@ onMounted(() => {
   text-stroke: 2px rgba(255,255,255,0.55);
   user-select: none;
   font-family: 'Impact', 'Arial Black', sans-serif;
+}
+
+/* ── Coming soon date badge ──────────────────────────────── */
+.coming-badge {
+  position: absolute;
+  bottom: 7px;
+  left: 7px;
+  right: 7px;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,0.85);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 7px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── Type pill (Film / Series) ────────────────────────────── */
+.type-pill {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  background: rgba(124,58,237,0.75);
+  backdrop-filter: blur(4px);
+  color: rgba(255,255,255,0.9);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 /* ── Rating badge ────────────────────────────────────────── */

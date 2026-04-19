@@ -244,8 +244,24 @@ onUnmounted(() => {
     <!-- ── Language Panel ───────────────────────────────────────────────────── -->
     <Transition name="slide-down">
       <div v-if="showLangPanel" class="bg-[#100d1e] border-b border-white/8 px-4 py-4">
-        <p class="text-xs text-white/40 uppercase tracking-wider font-medium mb-3">Subtitle Language</p>
-        <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
+
+        <!-- Honest explanation -->
+        <div class="flex gap-2.5 mb-4 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20">
+          <i class="fa-solid fa-circle-info text-amber-400/70 text-sm shrink-0 mt-0.5"></i>
+          <div class="text-xs text-white/55 leading-relaxed space-y-1">
+            <p><span class="text-white/75 font-medium">Subtitles:</span> The selected language is passed to the server as a hint. It works on VidSrc To, VidSrc Me, MovieAPI and others. If subtitles don't appear, open the player's built-in CC / subtitle menu.</p>
+            <p><span class="text-white/75 font-medium">Audio language:</span> Cannot be set from outside the player — switch audio tracks inside the player UI. French dubbed versions are only available when the server has a VF source for this title.</p>
+          </div>
+        </div>
+
+        <!-- Best servers for non-English note -->
+        <p class="text-[10px] text-purple-300/60 mb-3">
+          <i class="fa-solid fa-star text-[9px] mr-1"></i>
+          Best servers for French subtitles / VF: <span class="text-white/60">VidSrc To, VidSrc Me, MovieAPI</span>
+        </p>
+
+        <p class="text-xs text-white/40 uppercase tracking-wider font-medium mb-2">Subtitle Language</p>
+        <div class="flex flex-wrap gap-2 max-h-44 overflow-y-auto pr-1">
           <button
             v-for="lang in SUBTITLE_LANGUAGES"
             :key="lang.code"
@@ -258,6 +274,12 @@ onUnmounted(() => {
             {{ lang.name }}
           </button>
         </div>
+
+        <!-- No-param server warning -->
+        <p v-if="!currentServer.subParam" class="mt-3 text-[11px] text-amber-400/70 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+          <span><strong>{{ currentServer.name }}</strong> doesn't support URL subtitle params — switch to VidSrc To or VidSrc Me for best subtitle support.</span>
+        </p>
       </div>
     </Transition>
 
