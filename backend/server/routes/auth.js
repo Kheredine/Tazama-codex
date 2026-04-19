@@ -32,7 +32,9 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Invalid email address' })
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase())
+    const normalizedEmail = email.trim().toLowerCase()
+
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(normalizedEmail)
     if (existing) {
       return res.status(409).json({ error: 'An account with this email already exists' })
     }
@@ -41,7 +43,7 @@ router.post('/register', async (req, res) => {
 
     const result = db.prepare(
       'INSERT INTO users (email, username, password_hash, plan) VALUES (?, ?, ?, ?)'
-    ).run(email.toLowerCase(), username.trim(), password_hash, 'standard')
+    ).run(normalizedEmail, username.trim(), password_hash, 'standard')
 
     const userId = result.lastInsertRowid
 
@@ -50,7 +52,7 @@ router.post('/register', async (req, res) => {
       'INSERT INTO user_preferences (user_id) VALUES (?)'
     ).run(userId)
 
-    const user = { id: userId, email: email.toLowerCase(), username: username.trim(), plan: 'standard' }
+    const user = { id: userId, email: normalizedEmail, username: username.trim(), plan: 'standard' }
     const token = signToken(user)
 
     res.status(201).json({ token, user })
@@ -69,7 +71,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' })
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase())
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email.trim().toLowerCase())
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' })
     }

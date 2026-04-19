@@ -18,6 +18,7 @@ onUnmounted(() => { mounted = false })
 const switchTab = (tab) => {
   activeTab.value = tab
   errorMsg.value  = ''
+  password.value  = ''
 }
 
 const submit = async () => {
@@ -116,7 +117,7 @@ const submit = async () => {
               type="password"
               placeholder="Min. 6 characters"
               required
-              autocomplete="current-password"
+              :autocomplete="activeTab === 'login' ? 'current-password' : 'new-password'"
               class="auth-input"
             >
           </div>
