@@ -5,6 +5,9 @@ import { useUserLibrary } from '@/composables/useUserLibrary'
 import { useUserPreferences } from '@/composables/useUserPreferences'
 import { useI18n } from '@/composables/useI18n'
 import { useAuth } from '@/composables/useAuth'
+import StreamPlayer from '@/components/player/StreamPlayer.vue'
+import TrailerModal from '@/components/player/TrailerModal.vue'
+import SimilarTitles from '@/components/player/SimilarTitles.vue'
 
 const route  = useRoute()
 const router = useRouter()
@@ -24,6 +27,7 @@ const activeTab = ref('stream')
 const notForMeConfirm = ref(false)
 const notForMeDone    = ref(false)
 const showPlaylistModal = ref(false)
+const showTrailerModal  = ref(false)
 const playlists = ref([])
 const playlistsLoading = ref(false)
 const playlistsLoaded = ref(false)
@@ -518,42 +522,36 @@ const saveToPlaylist = async (playlist) => {
         </template>
       </div>
 
-      <!-- ── Trailer ─────────────────────────────────────────────────────── -->
+      <!-- ── Streaming Player ───────────────────────────────────────────────── -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xs uppercase tracking-widest text-white/40 font-medium">Watch Now</h2>
+          <!-- Trailer button -->
+          <button
+            class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition border border-red-500/30 text-red-400 bg-red-500/8 hover:bg-red-500/15 hover:border-red-500/50"
+            @click="showTrailerModal = true"
+          >
+            <i class="fa-brands fa-youtube text-sm"></i>
+            Trailer
+          </button>
+        </div>
+        <StreamPlayer :type="type" :id="id" :title="title" :poster="poster" />
+      </div>
+
+      <!-- ── Similar Titles ─────────────────────────────────────────────────── -->
       <div class="mb-10">
-        <h2 class="text-xs uppercase tracking-widest text-white/40 mb-4 font-medium">{{ t.trailer }}</h2>
-
-        <template v-if="trailer">
-          <div class="relative w-full max-w-2xl" style="padding-top: 56.25%">
-            <iframe
-              class="absolute inset-0 w-full h-full rounded-xl"
-              :src="`https://www.youtube.com/embed/${trailer.key}`"
-              frameborder="0"
-              allow="autoplay; encrypted-media"
-              allowfullscreen
-            ></iframe>
-          </div>
-        </template>
-
-        <!-- Always show trailer section — even if unavailable -->
-        <template v-else>
-          <div class="flex flex-col items-center justify-center gap-4 py-10 rounded-xl border border-white/8 bg-white/3">
-            <div class="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center">
-              <i class="fa-solid fa-film text-white/20 text-xl"></i>
-            </div>
-            <p class="text-white/35 text-sm text-center">{{ t.noTrailerAvailable }}</p>
-            <a
-              :href="`https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' ' + (type === 'movie' ? 'trailer' : 'trailer'))}`"
-              target="_blank" rel="noopener"
-              class="text-xs text-purple-400 hover:text-purple-300 transition flex items-center gap-1.5 border border-purple-500/30 px-4 py-2 rounded-xl hover:bg-purple-500/10"
-            >
-              <i class="fa-brands fa-youtube text-sm"></i>
-              Search on YouTube
-            </a>
-          </div>
-        </template>
+        <SimilarTitles :type="type" :id="id" />
       </div>
 
     </template>
+
+    <!-- Trailer modal -->
+    <TrailerModal
+      v-if="showTrailerModal"
+      :trailer-key="trailer?.key || ''"
+      :title="title"
+      @close="showTrailerModal = false"
+    />
 
     <div
       v-if="showPlaylistModal"
