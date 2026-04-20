@@ -50,8 +50,10 @@ const currentServer  = computed(() => ALL_SERVERS[serverIndex.value] || ALL_SERV
 const currentEpisode = computed(() => episodes.value.find(e => e.episode_number === episode.value))
 const episodeTitle   = computed(() => currentEpisode.value?.name || `Episode ${episode.value}`)
 
+const langParam = computed(() => audioFilter.value === 'all' ? 'en' : 'fr')
+
 const embedUrl = computed(() =>
-  getEmbedUrl(currentServer.value, props.type, props.id, season.value, episode.value)
+  getEmbedUrl(currentServer.value, props.type, props.id, season.value, episode.value, langParam.value)
 )
 
 // ── Filtered server list per category ─────────────────────────────────────────
