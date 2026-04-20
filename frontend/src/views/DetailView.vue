@@ -446,116 +446,16 @@ const saveToPlaylist = async (playlist) => {
         </div>
       </div>
 
-      <!-- ── Where to Watch ─────────────────────────────────────────────── -->
-      <div class="mb-10">
-        <div class="flex items-center gap-3 mb-4">
-          <h2 class="text-xs uppercase tracking-widest text-white/40 font-medium">{{ t.whereToWatch }}</h2>
-          <span
-            v-if="!isLocalRegion && hasAnyProviders"
-            class="text-[10px] text-amber-400/70 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full"
-          >
-            <i class="fa-solid fa-globe mr-1"></i>Showing region: {{ regionCode }} — {{ t.notAvailable }}
-          </span>
-        </div>
-
-        <template v-if="hasAnyProviders">
-          <!-- Tabs -->
-          <div class="flex gap-2 mb-4">
-            <button
-              v-for="tab in ['stream','rent','buy']"
-              :key="tab"
-              class="px-4 py-1.5 rounded-lg text-sm font-medium transition"
-              :class="activeTab === tab ? 'bg-purple-600 text-white' : 'bg-white/5 text-white/50 hover:text-white'"
-              @click="activeTab = tab"
-            >
-              {{ tab === 'stream' ? t.stream : tab === 'rent' ? t.rent : t.buy }}
-            </button>
-          </div>
-
-          <!-- Stream -->
-          <div v-if="activeTab === 'stream'">
-            <div v-if="streamList.length" class="flex flex-wrap gap-3">
-              <a v-for="p in streamList" :key="p.provider_id"
-                 :href="getPlatformUrl(p, title, jwLink)"
-                 target="_blank" rel="noopener"
-                 class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition">
-                <img :src="`${IMG_BASE}w45${p.logo_path}`" :alt="p.provider_name" class="w-7 h-7 rounded-lg" />
-                <span class="text-sm text-white/80">{{ p.provider_name }}</span>
-              </a>
-            </div>
-            <p v-else class="text-white/40 text-sm">
-              <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-400/60"></i>
-              Not available for streaming in region {{ regionCode }}
-            </p>
-          </div>
-
-          <!-- Rent -->
-          <div v-if="activeTab === 'rent'">
-            <div v-if="rentList.length" class="flex flex-wrap gap-3">
-              <a v-for="p in rentList" :key="p.provider_id"
-                 :href="getPlatformUrl(p, title, jwLink)"
-                 target="_blank" rel="noopener"
-                 class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition">
-                <img :src="`${IMG_BASE}w45${p.logo_path}`" :alt="p.provider_name" class="w-7 h-7 rounded-lg" />
-                <span class="text-sm text-white/80">{{ p.provider_name }}</span>
-              </a>
-            </div>
-            <p v-else class="text-white/40 text-sm">
-              <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-400/60"></i>
-              Not available to rent in region {{ regionCode }}
-            </p>
-          </div>
-
-          <!-- Buy -->
-          <div v-if="activeTab === 'buy'">
-            <div v-if="buyList.length" class="flex flex-wrap gap-3">
-              <a v-for="p in buyList" :key="p.provider_id"
-                 :href="getPlatformUrl(p, title, jwLink)"
-                 target="_blank" rel="noopener"
-                 class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 transition">
-                <img :src="`${IMG_BASE}w45${p.logo_path}`" :alt="p.provider_name" class="w-7 h-7 rounded-lg" />
-                <span class="text-sm text-white/80">{{ p.provider_name }}</span>
-              </a>
-            </div>
-            <p v-else class="text-white/40 text-sm">
-              <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-400/60"></i>
-              Not available to buy in region {{ regionCode }}
-            </p>
-          </div>
-
-          <!-- JustWatch link -->
-          <a v-if="jwLink" :href="jwLink" target="_blank" rel="noopener"
-             class="inline-flex items-center gap-2 mt-4 text-xs text-white/35 hover:text-white/60 transition">
-            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-            View all options on JustWatch
-          </a>
-        </template>
-
-        <!-- No providers at all — still show section with JustWatch fallback -->
-        <template v-else>
-          <p class="text-white/40 text-sm mb-3">
-            <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-400/60"></i>
-            {{ t.notAvailable }}
-          </p>
-          <a :href="`https://www.justwatch.com/us/search?q=${encodeURIComponent(title)}`"
-             target="_blank" rel="noopener"
-             class="inline-flex items-center gap-2 text-xs text-purple-400 hover:text-purple-300 transition border border-purple-500/30 px-4 py-2 rounded-xl hover:bg-purple-500/10">
-            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-            Search on JustWatch
-          </a>
-        </template>
-      </div>
-
-      <!-- ── Streaming Player ───────────────────────────────────────────────── -->
+      <!-- ── Trailer + Watch Now ──────────────────────────────────────────── -->
       <div class="mb-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xs uppercase tracking-widest text-white/40 font-medium">Watch Now</h2>
-          <!-- Trailer button -->
           <button
-            class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition border border-red-500/30 text-red-400 bg-red-500/8 hover:bg-red-500/15 hover:border-red-500/50"
+            v-if="trailer"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition border border-red-500/40 text-red-400 bg-red-500/10 hover:bg-red-500/20 hover:border-red-500/60"
             @click="showTrailerModal = true"
           >
-            <i class="fa-brands fa-youtube text-sm"></i>
+            <i class="fa-brands fa-youtube"></i>
             Trailer
           </button>
         </div>
