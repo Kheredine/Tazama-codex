@@ -6,9 +6,7 @@ import 'dotenv/config'
 import express from "express"
 import cors from "cors"
 import OpenAI from "openai"
-
-// Initialize DB (creates tables on first run)
-import './db.js'
+import { initDb } from './db.js'
 
 // Route modules
 import authRoutes      from './routes/auth.js'
@@ -210,4 +208,6 @@ Return JSON: { "recommendations": [{ "title": "", "year": "", "mediaType": "movi
   }
 })
 
-app.listen(PORT, () => console.log(`🎬 Tazama AI server running on port ${PORT}`))
+initDb()
+  .then(() => app.listen(PORT, () => console.log(`🎬 Tazama AI server running on port ${PORT}`)))
+  .catch(err => { console.error('Failed to initialize database:', err); process.exit(1) })

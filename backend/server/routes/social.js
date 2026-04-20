@@ -1,10 +1,9 @@
 import { Router } from 'express'
-import db from '../db.js'
+import pool from '../db.js'
 import { verifyToken } from '../middleware/auth.js'
 
 const router = Router()
 
-// ── Funny message pools ─────────────────────────────────────────────────────
 const ACCEPT_MSGS = [
   "🎬 Your Reel Mate request was accepted! The projector is now rolling for two.",
   "🍿 They welcomed you into their screening room! You're officially Reel Mates.",
@@ -18,19 +17,20 @@ const REFUSE_MSGS = [
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
 // ── GET /api/social/search?q=... ────────────────────────────────────────────
-router.get('/search', verifyToken, (req, res) => {
+router.get('/search', verifyToken, async (req, res) => {
   try {
     const q = (req.query.q || '').trim()
     if (q.length < 2) return res.json({ users: [] })
 
-    const users = db.prepare(`
-      SELECT id, username, plan, avatar, bio, is_discoverable, watcher_title, watcher_level
-      FROM users
-      WHERE LOWER(username) LIKE LOWER(?) AND COALESCE(is_discoverable, 1) != 0 AND id != ?
-      LIMIT 10
-    `).all(`%${q}%`, req.user.id)
+    const { rows } = await pool.query(
+      `SELECT id, username, plan, avatar, bio, is_discoverable, watcher_title, watcher_level
+       FROM users
+       WHERE LOWER(username) LIKE LOWER($1) AND COALESCE(is_discoverable, 1) != 0 AND id != $2
+       LIMIT 10`,
+      [`%${q}%`, req.user.id]
+    )
 
-    res.json({ users: users.map(u => ({
+    res.json({ users: rows.map(u => ({
       id:            u.id,
       username:      u.username,
       plan:          u.plan,
@@ -46,49 +46,53 @@ router.get('/search', verifyToken, (req, res) => {
 })
 
 // ── POST /api/social/request/:userId ───────────────────────────────────────
-// Send a connection request
-router.post('/request/:userId', verifyToken, (req, res) => {
+router.post('/request/:userId', verifyToken, async (req, res) => {
   try {
     const fromId = req.user.id
     const toId   = Number(req.params.userId)
 
     if (fromId === toId) return res.status(400).json({ error: "You can't request yourself" })
 
-    const target = db.prepare('SELECT id, username, is_discoverable FROM users WHERE id = ?').get(toId)
-    if (!target || !target.is_discoverable) return res.status(404).json({ error: 'User not found' })
+    const { rows: targetRows } = await pool.query(
+      'SELECT id, username, is_discoverable FROM users WHERE id = $1',
+      [toId]
+    )
+    if (!targetRows[0] || !targetRows[0].is_discoverable) {
+      return res.status(404).json({ error: 'User not found' })
+    }
 
-    // Check no existing connection
-    const existingConn = db.prepare(
+    const { rows: connRows } = await pool.query(
       `SELECT id FROM social_connections WHERE
-        (follower_id = ? AND following_id = ?) OR
-        (follower_id = ? AND following_id = ?)`
-    ).get(fromId, toId, toId, fromId)
-    if (existingConn) return res.status(409).json({ error: 'Already connected' })
+        (follower_id = $1 AND following_id = $2) OR
+        (follower_id = $2 AND following_id = $1)`,
+      [fromId, toId]
+    )
+    if (connRows[0]) return res.status(409).json({ error: 'Already connected' })
 
-    // Check no existing pending request
-    const existingReq = db.prepare(
-      'SELECT id FROM connection_requests WHERE from_user_id = ? AND to_user_id = ?'
-    ).get(fromId, toId)
-    if (existingReq) return res.status(409).json({ error: 'Request already sent' })
+    const { rows: existingReq } = await pool.query(
+      'SELECT id FROM connection_requests WHERE from_user_id = $1 AND to_user_id = $2',
+      [fromId, toId]
+    )
+    if (existingReq[0]) return res.status(409).json({ error: 'Request already sent' })
 
-    // Insert request
-    const result = db.prepare(
-      'INSERT INTO connection_requests (from_user_id, to_user_id) VALUES (?, ?)'
-    ).run(fromId, toId)
+    const { rows: reqRows } = await pool.query(
+      'INSERT INTO connection_requests (from_user_id, to_user_id) VALUES ($1, $2) RETURNING id',
+      [fromId, toId]
+    )
+    const requestId = reqRows[0].id
 
-    // Notify target
-    const sender = db.prepare('SELECT username, avatar FROM users WHERE id = ?').get(fromId)
-    db.prepare(`
-      INSERT INTO notifications (user_id, from_user_id, type, content, entity_id)
-      VALUES (?, ?, 'connection_request', ?, ?)
-    `).run(
-      toId,
-      fromId,
-      `🎬 ${sender.username} wants to be your Reel Mate!`,
-      String(result.lastInsertRowid)
+    const { rows: senderRows } = await pool.query(
+      'SELECT username, avatar FROM users WHERE id = $1',
+      [fromId]
+    )
+    const sender = senderRows[0]
+    await pool.query(
+      `INSERT INTO notifications (user_id, from_user_id, type, content, entity_id)
+       VALUES ($1, $2, 'connection_request', $3, $4)`,
+      [toId, fromId, `🎬 ${sender.username} wants to be your Reel Mate!`, String(requestId)]
     )
 
-    res.json({ ok: true, requestId: result.lastInsertRowid })
+    res.json({ ok: true, requestId })
   } catch (err) {
     console.error('Send request error:', err.message)
     res.status(500).json({ error: 'Failed to send request' })
@@ -96,39 +100,37 @@ router.post('/request/:userId', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/social/request/:requestId/accept ──────────────────────────────
-router.put('/request/:requestId/accept', verifyToken, (req, res) => {
+router.put('/request/:requestId/accept', verifyToken, async (req, res) => {
   try {
     const requestId = Number(req.params.requestId)
     const meId      = req.user.id
 
-    const req_ = db.prepare(
-      'SELECT * FROM connection_requests WHERE id = ? AND to_user_id = ? AND status = ?'
-    ).get(requestId, meId, 'pending')
-    if (!req_) return res.status(404).json({ error: 'Request not found' })
+    const { rows } = await pool.query(
+      "SELECT * FROM connection_requests WHERE id = $1 AND to_user_id = $2 AND status = 'pending'",
+      [requestId, meId]
+    )
+    if (!rows[0]) return res.status(404).json({ error: 'Request not found' })
 
-    const { from_user_id, to_user_id } = req_
+    const { from_user_id, to_user_id } = rows[0]
 
-    // Move to social_connections
-    db.prepare(
-      `INSERT OR IGNORE INTO social_connections (follower_id, following_id, status)
-       VALUES (?, ?, 'accepted')`
-    ).run(from_user_id, to_user_id)
+    await pool.query(
+      `INSERT INTO social_connections (follower_id, following_id, status)
+       VALUES ($1, $2, 'accepted') ON CONFLICT DO NOTHING`,
+      [from_user_id, to_user_id]
+    )
+    await pool.query(
+      `INSERT INTO social_connections (follower_id, following_id, status)
+       VALUES ($1, $2, 'accepted') ON CONFLICT DO NOTHING`,
+      [to_user_id, from_user_id]
+    )
 
-    // Also add reverse so connection is mutual
-    db.prepare(
-      `INSERT OR IGNORE INTO social_connections (follower_id, following_id, status)
-       VALUES (?, ?, 'accepted')`
-    ).run(to_user_id, from_user_id)
+    await pool.query(
+      `INSERT INTO notifications (user_id, from_user_id, type, content)
+       VALUES ($1, $2, 'request_accepted', $3)`,
+      [from_user_id, meId, pick(ACCEPT_MSGS)]
+    )
 
-    // Send funny acceptance notification to the requester
-    const accepter = db.prepare('SELECT username FROM users WHERE id = ?').get(meId)
-    db.prepare(`
-      INSERT INTO notifications (user_id, from_user_id, type, content)
-      VALUES (?, ?, 'request_accepted', ?)
-    `).run(from_user_id, meId, pick(ACCEPT_MSGS))
-
-    // Delete the request
-    db.prepare('DELETE FROM connection_requests WHERE id = ?').run(requestId)
+    await pool.query('DELETE FROM connection_requests WHERE id = $1', [requestId])
 
     res.json({ ok: true })
   } catch (err) {
@@ -138,26 +140,24 @@ router.put('/request/:requestId/accept', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/social/request/:requestId/refuse ─────────────────────────────
-router.put('/request/:requestId/refuse', verifyToken, (req, res) => {
+router.put('/request/:requestId/refuse', verifyToken, async (req, res) => {
   try {
     const requestId = Number(req.params.requestId)
     const meId      = req.user.id
 
-    const req_ = db.prepare(
-      'SELECT * FROM connection_requests WHERE id = ? AND to_user_id = ? AND status = ?'
-    ).get(requestId, meId, 'pending')
-    if (!req_) return res.status(404).json({ error: 'Request not found' })
+    const { rows } = await pool.query(
+      "SELECT * FROM connection_requests WHERE id = $1 AND to_user_id = $2 AND status = 'pending'",
+      [requestId, meId]
+    )
+    if (!rows[0]) return res.status(404).json({ error: 'Request not found' })
 
-    const { from_user_id } = req_
+    await pool.query(
+      `INSERT INTO notifications (user_id, from_user_id, type, content)
+       VALUES ($1, $2, 'request_refused', $3)`,
+      [rows[0].from_user_id, meId, pick(REFUSE_MSGS)]
+    )
 
-    // Send funny refusal notification to the requester
-    db.prepare(`
-      INSERT INTO notifications (user_id, from_user_id, type, content)
-      VALUES (?, ?, 'request_refused', ?)
-    `).run(from_user_id, meId, pick(REFUSE_MSGS))
-
-    // Delete the request
-    db.prepare('DELETE FROM connection_requests WHERE id = ?').run(requestId)
+    await pool.query('DELETE FROM connection_requests WHERE id = $1', [requestId])
 
     res.json({ ok: true })
   } catch (err) {
@@ -167,15 +167,15 @@ router.put('/request/:requestId/refuse', verifyToken, (req, res) => {
 })
 
 // ── DELETE /api/social/connect/:userId ─────────────────────────────────────
-// Remove an existing accepted connection
-router.delete('/connect/:userId', verifyToken, (req, res) => {
+router.delete('/connect/:userId', verifyToken, async (req, res) => {
   try {
     const meId    = req.user.id
     const otherId = Number(req.params.userId)
 
-    db.prepare(
-      'DELETE FROM social_connections WHERE (follower_id = ? AND following_id = ?) OR (follower_id = ? AND following_id = ?)'
-    ).run(meId, otherId, otherId, meId)
+    await pool.query(
+      'DELETE FROM social_connections WHERE (follower_id = $1 AND following_id = $2) OR (follower_id = $2 AND following_id = $1)',
+      [meId, otherId]
+    )
 
     res.json({ ok: true })
   } catch (err) {
@@ -185,16 +185,16 @@ router.delete('/connect/:userId', verifyToken, (req, res) => {
 })
 
 // ── GET /api/social/status/:userId ─────────────────────────────────────────
-// Returns connectionStatus: none|pending_sent|pending_received|connected
-router.get('/status/:userId', verifyToken, (req, res) => {
+router.get('/status/:userId', verifyToken, async (req, res) => {
   try {
     const meId     = req.user.id
     const targetId = Number(req.params.userId)
 
-    // Check existing connection (mutual via both rows)
-    const connected = !!db.prepare(
-      'SELECT 1 FROM social_connections WHERE follower_id = ? AND following_id = ?'
-    ).get(meId, targetId)
+    const { rows: connRows } = await pool.query(
+      'SELECT 1 FROM social_connections WHERE follower_id = $1 AND following_id = $2',
+      [meId, targetId]
+    )
+    const connected = connRows.length > 0
 
     let connectionStatus = 'none'
     let requestId        = null
@@ -202,33 +202,31 @@ router.get('/status/:userId', verifyToken, (req, res) => {
     if (connected) {
       connectionStatus = 'connected'
     } else {
-      // Check pending sent
-      const sentReq = db.prepare(
-        'SELECT id FROM connection_requests WHERE from_user_id = ? AND to_user_id = ? AND status = ?'
-      ).get(meId, targetId, 'pending')
-
-      if (sentReq) {
+      const { rows: sentRows } = await pool.query(
+        "SELECT id FROM connection_requests WHERE from_user_id = $1 AND to_user_id = $2 AND status = 'pending'",
+        [meId, targetId]
+      )
+      if (sentRows[0]) {
         connectionStatus = 'pending_sent'
-        requestId        = sentReq.id
+        requestId        = sentRows[0].id
       } else {
-        // Check pending received
-        const receivedReq = db.prepare(
-          'SELECT id FROM connection_requests WHERE from_user_id = ? AND to_user_id = ? AND status = ?'
-        ).get(targetId, meId, 'pending')
-
-        if (receivedReq) {
+        const { rows: rcvRows } = await pool.query(
+          "SELECT id FROM connection_requests WHERE from_user_id = $1 AND to_user_id = $2 AND status = 'pending'",
+          [targetId, meId]
+        )
+        if (rcvRows[0]) {
           connectionStatus = 'pending_received'
-          requestId        = receivedReq.id
+          requestId        = rcvRows[0].id
         }
       }
     }
 
-    // Count accepted connections of the target user
-    const mateCount = db.prepare(
-      'SELECT COUNT(*) as c FROM social_connections WHERE follower_id = ?'
-    ).get(targetId).c
+    const { rows: countRows } = await pool.query(
+      'SELECT COUNT(*)::INTEGER as c FROM social_connections WHERE follower_id = $1',
+      [targetId]
+    )
 
-    res.json({ connectionStatus, requestId, mateCount })
+    res.json({ connectionStatus, requestId, mateCount: countRows[0].c })
   } catch (err) {
     console.error('Status error:', err.message)
     res.status(500).json({ error: 'Failed to fetch status' })
@@ -236,24 +234,20 @@ router.get('/status/:userId', verifyToken, (req, res) => {
 })
 
 // ── GET /api/social/mates ───────────────────────────────────────────────────
-// Returns user's accepted connections
-router.get('/mates', verifyToken, (req, res) => {
+router.get('/mates', verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id
-
-    // Since connections are stored bidirectionally (two rows per pair),
-    // we only need to look at follower_id = userId rows
-    const mates = db.prepare(`
-      SELECT u.id, u.username, u.avatar, u.plan, u.bio, u.watcher_title, u.watcher_level
-      FROM social_connections sc
-      JOIN users u ON u.id = sc.following_id
-      WHERE sc.follower_id = ?
-      ORDER BY sc.created_at DESC
-    `).all(userId)
+    const { rows } = await pool.query(
+      `SELECT u.id, u.username, u.avatar, u.plan, u.bio, u.watcher_title, u.watcher_level
+       FROM social_connections sc
+       JOIN users u ON u.id = sc.following_id
+       WHERE sc.follower_id = $1
+       ORDER BY sc.created_at DESC`,
+      [req.user.id]
+    )
 
     res.json({
-      count: mates.length,
-      mates: mates.map(u => ({
+      count: rows.length,
+      mates: rows.map(u => ({
         id:            u.id,
         username:      u.username,
         avatar:        u.avatar || '🎬',
@@ -270,19 +264,19 @@ router.get('/mates', verifyToken, (req, res) => {
 })
 
 // ── GET /api/social/pending-requests ───────────────────────────────────────
-// Returns incoming pending requests for the logged-in user
-router.get('/pending-requests', verifyToken, (req, res) => {
+router.get('/pending-requests', verifyToken, async (req, res) => {
   try {
-    const requests = db.prepare(`
-      SELECT cr.id, cr.from_user_id, cr.created_at,
-             u.username, u.avatar, u.plan
-      FROM connection_requests cr
-      JOIN users u ON u.id = cr.from_user_id
-      WHERE cr.to_user_id = ? AND cr.status = 'pending'
-      ORDER BY cr.created_at DESC
-    `).all(req.user.id)
+    const { rows } = await pool.query(
+      `SELECT cr.id, cr.from_user_id, cr.created_at,
+              u.username, u.avatar, u.plan
+       FROM connection_requests cr
+       JOIN users u ON u.id = cr.from_user_id
+       WHERE cr.to_user_id = $1 AND cr.status = 'pending'
+       ORDER BY cr.created_at DESC`,
+      [req.user.id]
+    )
 
-    res.json({ requests: requests.map(r => ({
+    res.json({ requests: rows.map(r => ({
       id:           r.id,
       from_user_id: r.from_user_id,
       username:     r.username,
@@ -297,32 +291,37 @@ router.get('/pending-requests', verifyToken, (req, res) => {
 })
 
 // ── GET /api/social/notifications ──────────────────────────────────────────
-router.get('/notifications', verifyToken, (req, res) => {
+router.get('/notifications', verifyToken, async (req, res) => {
   try {
-    const notifications = db.prepare(`
-      SELECT n.*, u.username as from_username, u.avatar as from_avatar
-      FROM notifications n
-      LEFT JOIN users u ON u.id = n.from_user_id
-      WHERE n.user_id = ?
-      ORDER BY n.created_at DESC
-      LIMIT 50
-    `).all(req.user.id)
-
-    res.json({ notifications })
+    const { rows } = await pool.query(
+      `SELECT n.*, u.username as from_username, u.avatar as from_avatar
+       FROM notifications n
+       LEFT JOIN users u ON u.id = n.from_user_id
+       WHERE n.user_id = $1
+       ORDER BY n.created_at DESC
+       LIMIT 50`,
+      [req.user.id]
+    )
+    res.json({ notifications: rows })
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch notifications' })
   }
 })
 
 // ── PUT /api/social/notifications/read ─────────────────────────────────────
-router.put('/notifications/read', verifyToken, (req, res) => {
+router.put('/notifications/read', verifyToken, async (req, res) => {
   try {
     const { ids } = req.body
     if (ids && ids.length) {
-      const stmt = db.prepare('UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?')
-      for (const id of ids) stmt.run(id, req.user.id)
+      await pool.query(
+        'UPDATE notifications SET is_read = 1 WHERE id = ANY($1::integer[]) AND user_id = $2',
+        [ids, req.user.id]
+      )
     } else {
-      db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?').run(req.user.id)
+      await pool.query(
+        'UPDATE notifications SET is_read = 1 WHERE user_id = $1',
+        [req.user.id]
+      )
     }
     res.json({ ok: true })
   } catch (err) {
@@ -331,29 +330,30 @@ router.put('/notifications/read', verifyToken, (req, res) => {
 })
 
 // ── GET /api/social/unread-count ───────────────────────────────────────────
-router.get('/unread-count', verifyToken, (req, res) => {
+router.get('/unread-count', verifyToken, async (req, res) => {
   try {
-    const row = db.prepare('SELECT COUNT(*) as c FROM notifications WHERE user_id = ? AND is_read = 0').get(req.user.id)
-    res.json({ count: row.c })
+    const { rows } = await pool.query(
+      'SELECT COUNT(*)::INTEGER as c FROM notifications WHERE user_id = $1 AND is_read = 0',
+      [req.user.id]
+    )
+    res.json({ count: rows[0].c })
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch unread count' })
   }
 })
 
-// ── GET /api/social/connections (kept for backwards compat) ─────────────────
-router.get('/connections', verifyToken, (req, res) => {
+// ── GET /api/social/connections ─────────────────────────────────────────────
+router.get('/connections', verifyToken, async (req, res) => {
   try {
-    const userId = req.user.id
-
-    const mates = db.prepare(`
-      SELECT u.id, u.username, u.plan, u.avatar, u.bio
-      FROM social_connections sc
-      JOIN users u ON u.id = sc.following_id
-      WHERE sc.follower_id = ?
-      ORDER BY sc.created_at DESC
-    `).all(userId)
-
-    res.json({ followers: mates, following: mates })
+    const { rows } = await pool.query(
+      `SELECT u.id, u.username, u.plan, u.avatar, u.bio
+       FROM social_connections sc
+       JOIN users u ON u.id = sc.following_id
+       WHERE sc.follower_id = $1
+       ORDER BY sc.created_at DESC`,
+      [req.user.id]
+    )
+    res.json({ followers: rows, following: rows })
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch connections' })
   }
