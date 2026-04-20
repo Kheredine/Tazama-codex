@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
-  ALL_SERVERS, PROVIDER_CATEGORIES, getEmbedUrl,
+  ALL_SERVERS, PROVIDER_CATEGORIES, getEmbedUrl, getServerIndex,
   VIDSRC_SERVERS, EMBED_SERVERS, LYNX_SERVERS, DIRECT_SERVERS, MULTI_SERVERS,
 } from '@/utils/servers'
 import { useWatchHistory } from '@/composables/useWatchHistory'
@@ -17,7 +17,8 @@ const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY
 const IMG_BASE  = 'https://image.tmdb.org/t/p/'
 
 // ── Server state ───────────────────────────────────────────────────────────────
-const serverIndex    = ref(parseInt(localStorage.getItem('tazama_server') || '0'))
+const DEFAULT_SERVER = getServerIndex('vidsrc-to') // VidSrc To has better TMDB coverage than Pro
+const serverIndex    = ref(parseInt(localStorage.getItem('tazama_server') ?? String(DEFAULT_SERVER)))
 const audioFilter    = ref(localStorage.getItem('tazama_audio_filter') || 'all') // 'all' | 'vf' | 'vostfr'
 const autoFallback   = ref(localStorage.getItem('tazama_auto_fallback') !== 'false')
 const showServerPanel = ref(false)
@@ -443,6 +444,27 @@ onUnmounted(() => {
         @load="onIframeLoad"
         @error="onIframeError"
       ></iframe>
+    </div>
+
+    <!-- ── "Not loading?" helper bar ──────────────────────────────────────────── -->
+    <div
+      v-if="!iframeLoading && !iframeError"
+      class="flex items-center justify-between gap-3 px-4 py-2 bg-[#080613] border-t border-white/5"
+    >
+      <div class="flex items-center gap-2 min-w-0">
+        <span v-if="currentServer.requiresFileId" class="flex items-center gap-1.5 text-[10px] text-amber-400/60">
+          <i class="fa-solid fa-triangle-exclamation text-[9px]"></i>
+          <span class="truncate">{{ currentServer.name }} may need a direct file link — try another server if it shows an error.</span>
+        </span>
+        <span v-else class="text-[10px] text-white/20">Seeing a 404 or blank screen? Switch to another server.</span>
+      </div>
+      <button
+        class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/4 border border-white/8 text-white/40 hover:text-white/80 hover:bg-[#7c3aed]/10 hover:border-[#7c3aed]/25 text-[11px] font-medium transition-all"
+        @click="tryNextServer"
+      >
+        <i class="fa-solid fa-forward-step text-[9px]"></i>
+        Try Next
+      </button>
     </div>
 
     <!-- ── Controls Bar (TV) ─────────────────────────────────────────────────── -->
