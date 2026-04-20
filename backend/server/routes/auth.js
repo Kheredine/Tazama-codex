@@ -72,12 +72,12 @@ router.post('/login', async (req, res) => {
 
     const user = db.prepare('SELECT * FROM users WHERE lower(username) = lower(?)').get(username.trim())
     if (!user) {
-      return res.status(401).json({ error: 'Invalid username or passcode' })
+      return res.status(401).json({ error: 'No account found with that username' })
     }
 
     const valid = await bcrypt.compare(String(passcode), user.password_hash)
     if (!valid) {
-      return res.status(401).json({ error: 'Invalid username or passcode' })
+      return res.status(401).json({ error: 'Incorrect passcode for this username' })
     }
 
     const payload = { id: user.id, email: user.email, username: user.username, plan: user.plan }
