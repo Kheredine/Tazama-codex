@@ -564,7 +564,14 @@ const saveToPlaylist = async (playlist) => {
 
       <!-- ── Similar Titles ─────────────────────────────────────────────────── -->
       <div class="mb-10">
-        <SimilarTitles :type="type" :id="id" />
+        <SimilarTitles
+          :type="type"
+          :id="id"
+          :title="title"
+          :year="year"
+          :genres="media?.genres || []"
+          :overview="overview"
+        />
       </div>
 
     </template>

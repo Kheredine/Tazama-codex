@@ -210,4 +210,71 @@ Return JSON: { "recommendations": [{ "title": "", "year": "", "mediaType": "movi
   }
 })
 
+/*
+|--------------------------------------------------------------------------
+| POST /api/similar
+| AI-powered similar title suggestions based on themes, tone, and style
+|--------------------------------------------------------------------------
+*/
+app.post("/api/similar", async (req, res) => {
+  try {
+    const { title, year, type, genres = [], overview = '' } = req.body
+
+    if (!title) return res.status(400).json({ error: "title is required" })
+
+    const genreList  = genres.length ? genres.join(', ') : 'unknown'
+    const mediaLabel = type === 'movie' ? 'movie' : 'TV series / anime'
+    const overviewNote = overview
+      ? `\nPlot synopsis: "${overview.slice(0, 300)}"`
+      : ''
+
+    const systemPrompt = `You are a world-class film critic and entertainment expert with encyclopedic knowledge of movies, series, anime, and documentaries across all eras and cultures. Your task is to suggest titles that are GENUINELY similar — matching in themes, mood, narrative style, and emotional tone — not just the same genre. Always return valid JSON only, no markdown.`
+
+    const userPrompt = `Suggest 12 titles that are TRULY similar to the ${mediaLabel} "${title}" (${year}).
+Genres: ${genreList}${overviewNote}
+
+Similarity criteria (all must apply):
+- Same emotional tone and atmosphere
+- Similar narrative themes and story beats
+- Comparable pacing and visual style
+- Shared thematic depth or subtext
+
+IMPORTANT rules:
+- Do NOT include "${title}" itself
+- Avoid generic genre filler — every suggestion must have a clear thematic link
+- Include a mix of: well-known titles AND hidden gems / cult classics
+- Mix movie and TV suggestions when appropriate
+- Span different eras and countries if relevant
+
+Return JSON:
+{
+  "similar": [
+    {
+      "title": "Exact original or English title (for TMDB search)",
+      "year": "YYYY",
+      "mediaType": "movie|tv",
+      "reason": "One sentence explaining exactly WHY this is similar in theme/tone/style"
+    }
+  ]
+}`
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user",   content: userPrompt },
+      ],
+      temperature: 0.75,
+    })
+
+    const parsed = JSON.parse(response.choices[0].message.content)
+    res.json(parsed.similar || [])
+
+  } catch (err) {
+    console.error("Similar error:", err.message)
+    res.status(500).json({ error: "Similar titles lookup failed" })
+  }
+})
+
 app.listen(PORT, () => console.log(`🎬 Tazama AI server running on port ${PORT}`))
