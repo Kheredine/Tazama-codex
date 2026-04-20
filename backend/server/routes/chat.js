@@ -1,11 +1,10 @@
 import { Router } from 'express'
 import OpenAI from 'openai'
-import db from '../db.js'
+import pool from '../db.js'
 import { verifyToken, requirePremium } from '../middleware/auth.js'
 
 const router = Router()
 
-// Lazy init — ensures env vars are loaded before the client is created
 let _openai = null
 const openai = () => {
   if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -55,20 +54,19 @@ router.post('/oracle', verifyToken, requirePremium, async (req, res) => {
 
     const userId = req.user.id
 
-    // Save user message
-    db.prepare(
-      'INSERT INTO oracle_chat_messages (user_id, role, content) VALUES (?, ?, ?)'
-    ).run(userId, 'user', message.trim())
+    await pool.query(
+      'INSERT INTO oracle_chat_messages (user_id, role, content) VALUES ($1, $2, $3)',
+      [userId, 'user', message.trim()]
+    )
 
-    // Fetch last 40 messages for context (chronological)
-    const history = db.prepare(
-      'SELECT role, content FROM oracle_chat_messages WHERE user_id = ? ORDER BY created_at DESC LIMIT 40'
-    ).all(userId).reverse()
+    const { rows: history } = await pool.query(
+      'SELECT role, content FROM oracle_chat_messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT 40',
+      [userId]
+    )
 
-    // Build messages for OpenAI
     const messages = [
       { role: 'system', content: ORACLE_SYSTEM },
-      ...history.map(m => ({ role: m.role, content: m.content })),
+      ...history.reverse().map(m => ({ role: m.role, content: m.content })),
     ]
 
     const response = await openai().chat.completions.create({
@@ -80,10 +78,10 @@ router.post('/oracle', verifyToken, requirePremium, async (req, res) => {
 
     const reply = response.choices[0].message.content
 
-    // Save oracle reply
-    db.prepare(
-      'INSERT INTO oracle_chat_messages (user_id, role, content) VALUES (?, ?, ?)'
-    ).run(userId, 'assistant', reply)
+    await pool.query(
+      'INSERT INTO oracle_chat_messages (user_id, role, content) VALUES ($1, $2, $3)',
+      [userId, 'assistant', reply]
+    )
 
     res.json({ reply })
   } catch (err) {
@@ -93,13 +91,13 @@ router.post('/oracle', verifyToken, requirePremium, async (req, res) => {
 })
 
 // ── GET /api/chat/oracle/history ─────────────────────────────────────────────
-router.get('/oracle/history', verifyToken, requirePremium, (req, res) => {
+router.get('/oracle/history', verifyToken, requirePremium, async (req, res) => {
   try {
-    const messages = db.prepare(
-      'SELECT role, content, created_at FROM oracle_chat_messages WHERE user_id = ? ORDER BY created_at ASC LIMIT 60'
-    ).all(req.user.id)
-
-    res.json({ messages })
+    const { rows } = await pool.query(
+      'SELECT role, content, created_at FROM oracle_chat_messages WHERE user_id = $1 ORDER BY created_at ASC LIMIT 60',
+      [req.user.id]
+    )
+    res.json({ messages: rows })
   } catch (err) {
     console.error('Chat history error:', err.message)
     res.status(500).json({ error: 'Failed to fetch chat history' })
@@ -107,9 +105,9 @@ router.get('/oracle/history', verifyToken, requirePremium, (req, res) => {
 })
 
 // ── DELETE /api/chat/oracle/history ──────────────────────────────────────────
-router.delete('/oracle/history', verifyToken, requirePremium, (req, res) => {
+router.delete('/oracle/history', verifyToken, requirePremium, async (req, res) => {
   try {
-    db.prepare('DELETE FROM oracle_chat_messages WHERE user_id = ?').run(req.user.id)
+    await pool.query('DELETE FROM oracle_chat_messages WHERE user_id = $1', [req.user.id])
     res.json({ ok: true })
   } catch (err) {
     console.error('Clear history error:', err.message)

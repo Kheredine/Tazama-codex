@@ -1,11 +1,9 @@
 import { Router } from 'express'
 import nodemailer from 'nodemailer'
-import db from '../db.js'
-import { verifyToken } from '../middleware/auth.js'
+import pool from '../db.js'
 
 const router = Router()
 
-// Build transporter lazily — only if env vars are set
 let _transporter = null
 const getTransporter = () => {
   if (_transporter) return _transporter
@@ -21,7 +19,6 @@ const getTransporter = () => {
 }
 
 // ── POST /api/feedback ──────────────────────────────────────────────────────
-// Optional auth (works for both logged-in and anonymous users)
 router.post('/', async (req, res) => {
   try {
     const { name = 'Anonymous', category, message } = req.body
@@ -30,24 +27,21 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Category and message are required (min 5 chars)' })
     }
 
-    // Save to DB
     let userId = null
     const authHeader = req.headers.authorization
     if (authHeader?.startsWith('Bearer ')) {
       try {
-        const { verifyToken: vt } = await import('../middleware/auth.js')
-        // Quick inline decode — non-blocking
         const jwt = (await import('jsonwebtoken')).default
         const decoded = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET)
         userId = decoded.id
       } catch { /* not logged in — fine */ }
     }
 
-    db.prepare(
-      'INSERT INTO feedback (name, user_id, category, message) VALUES (?, ?, ?, ?)'
-    ).run(name.trim(), userId, category, message.trim())
+    await pool.query(
+      'INSERT INTO feedback (name, user_id, category, message) VALUES ($1, $2, $3, $4)',
+      [name.trim(), userId, category, message.trim()]
+    )
 
-    // Try to send email if SMTP is configured
     const transporter = getTransporter()
     if (transporter) {
       const TO   = process.env.FEEDBACK_EMAIL_TO || 'karylinus@gmail.com'

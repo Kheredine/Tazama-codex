@@ -1,60 +1,56 @@
 import { Router } from 'express'
-import db from '../db.js'
+import pool from '../db.js'
 import { verifyToken } from '../middleware/auth.js'
 
 const router = Router()
 
-// Helper: check if two users are connected (accepted connection)
-const areConnected = (userA, userB) => {
-  return !!db.prepare(
-    'SELECT 1 FROM social_connections WHERE follower_id = ? AND following_id = ?'
-  ).get(userA, userB)
+const areConnected = async (userA, userB) => {
+  const { rows } = await pool.query(
+    'SELECT 1 FROM social_connections WHERE follower_id = $1 AND following_id = $2',
+    [userA, userB]
+  )
+  return rows.length > 0
 }
 
 // ── GET /api/messages/conversations ────────────────────────────────────────
-// List all conversations (one per mate who has exchanged at least one message)
-router.get('/conversations', verifyToken, (req, res) => {
+router.get('/conversations', verifyToken, async (req, res) => {
   try {
     const userId = req.user.id
 
-    // Get all mates first
-    const mates = db.prepare(`
-      SELECT u.id, u.username, u.avatar, u.plan
-      FROM social_connections sc
-      JOIN users u ON u.id = sc.following_id
-      WHERE sc.follower_id = ?
-    `).all(userId)
+    const { rows: mates } = await pool.query(
+      `SELECT u.id, u.username, u.avatar, u.plan
+       FROM social_connections sc
+       JOIN users u ON u.id = sc.following_id
+       WHERE sc.follower_id = $1`,
+      [userId]
+    )
 
     const conversations = []
-
     for (const mate of mates) {
-      // Get latest message between them
-      const lastMsg = db.prepare(`
-        SELECT * FROM messages
-        WHERE (from_user_id = ? AND to_user_id = ?)
-           OR (from_user_id = ? AND to_user_id = ?)
-        ORDER BY created_at DESC
-        LIMIT 1
-      `).get(userId, mate.id, mate.id, userId)
-
-      // Count unread messages from this mate
-      const unreadRow = db.prepare(`
-        SELECT COUNT(*) as c FROM messages
-        WHERE from_user_id = ? AND to_user_id = ? AND is_read = 0
-      `).get(mate.id, userId)
+      const { rows: lastMsgRows } = await pool.query(
+        `SELECT * FROM messages
+         WHERE (from_user_id = $1 AND to_user_id = $2)
+            OR (from_user_id = $2 AND to_user_id = $1)
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [userId, mate.id]
+      )
+      const { rows: unreadRows } = await pool.query(
+        'SELECT COUNT(*)::INTEGER as c FROM messages WHERE from_user_id = $1 AND to_user_id = $2 AND is_read = 0',
+        [mate.id, userId]
+      )
 
       conversations.push({
         userId:      mate.id,
         username:    mate.username,
         avatar:      mate.avatar || '🎬',
         plan:        mate.plan,
-        lastMessage: lastMsg?.content || null,
-        lastAt:      lastMsg?.created_at || null,
-        unread:      unreadRow.c,
+        lastMessage: lastMsgRows[0]?.content || null,
+        lastAt:      lastMsgRows[0]?.created_at || null,
+        unread:      unreadRows[0].c,
       })
     }
 
-    // Sort by last message date (most recent first), then alphabetically
     conversations.sort((a, b) => {
       if (a.lastAt && b.lastAt) return b.lastAt - a.lastAt
       if (a.lastAt) return -1
@@ -70,31 +66,34 @@ router.get('/conversations', verifyToken, (req, res) => {
 })
 
 // ── GET /api/messages/:userId ───────────────────────────────────────────────
-// Get message thread with a specific user (must be connected)
-router.get('/:userId', verifyToken, (req, res) => {
+router.get('/:userId', verifyToken, async (req, res) => {
   try {
     const meId    = req.user.id
     const otherId = Number(req.params.userId)
 
-    if (!areConnected(meId, otherId)) {
+    if (!await areConnected(meId, otherId)) {
       return res.status(403).json({ error: 'You must be Reel Mates to message this user' })
     }
 
-    const messages = db.prepare(`
-      SELECT id, from_user_id, to_user_id, content, is_read, created_at
-      FROM messages
-      WHERE (from_user_id = ? AND to_user_id = ?)
-         OR (from_user_id = ? AND to_user_id = ?)
-      ORDER BY created_at ASC
-    `).all(meId, otherId, otherId, meId)
+    const { rows: messages } = await pool.query(
+      `SELECT id, from_user_id, to_user_id, content, is_read, created_at
+       FROM messages
+       WHERE (from_user_id = $1 AND to_user_id = $2)
+          OR (from_user_id = $2 AND to_user_id = $1)
+       ORDER BY created_at ASC`,
+      [meId, otherId]
+    )
 
-    const otherUser = db.prepare('SELECT username, avatar FROM users WHERE id = ?').get(otherId)
+    const { rows: otherRows } = await pool.query(
+      'SELECT username, avatar FROM users WHERE id = $1',
+      [otherId]
+    )
 
     res.json({
       messages,
       otherUser: {
-        username: otherUser?.username || '',
-        avatar:   otherUser?.avatar   || '🎬',
+        username: otherRows[0]?.username || '',
+        avatar:   otherRows[0]?.avatar   || '🎬',
       }
     })
   } catch (err) {
@@ -104,8 +103,7 @@ router.get('/:userId', verifyToken, (req, res) => {
 })
 
 // ── POST /api/messages/:userId ──────────────────────────────────────────────
-// Send a message to a specific user (must be connected)
-router.post('/:userId', verifyToken, (req, res) => {
+router.post('/:userId', verifyToken, async (req, res) => {
   try {
     const meId    = req.user.id
     const otherId = Number(req.params.userId)
@@ -115,18 +113,16 @@ router.post('/:userId', verifyToken, (req, res) => {
       return res.status(400).json({ error: 'Message content cannot be empty' })
     }
 
-    if (!areConnected(meId, otherId)) {
+    if (!await areConnected(meId, otherId)) {
       return res.status(403).json({ error: 'You must be Reel Mates to message this user' })
     }
 
-    const result = db.prepare(`
-      INSERT INTO messages (from_user_id, to_user_id, content)
-      VALUES (?, ?, ?)
-    `).run(meId, otherId, content.trim())
+    const { rows } = await pool.query(
+      'INSERT INTO messages (from_user_id, to_user_id, content) VALUES ($1, $2, $3) RETURNING *',
+      [meId, otherId, content.trim()]
+    )
 
-    const message = db.prepare('SELECT * FROM messages WHERE id = ?').get(result.lastInsertRowid)
-
-    res.json({ ok: true, message })
+    res.json({ ok: true, message: rows[0] })
   } catch (err) {
     console.error('Send message error:', err.message)
     res.status(500).json({ error: 'Failed to send message' })
@@ -134,16 +130,15 @@ router.post('/:userId', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/messages/:userId/read ─────────────────────────────────────────
-// Mark all messages from userId to me as read
-router.put('/:userId/read', verifyToken, (req, res) => {
+router.put('/:userId/read', verifyToken, async (req, res) => {
   try {
     const meId    = req.user.id
     const otherId = Number(req.params.userId)
 
-    db.prepare(`
-      UPDATE messages SET is_read = 1
-      WHERE from_user_id = ? AND to_user_id = ? AND is_read = 0
-    `).run(otherId, meId)
+    await pool.query(
+      'UPDATE messages SET is_read = 1 WHERE from_user_id = $1 AND to_user_id = $2 AND is_read = 0',
+      [otherId, meId]
+    )
 
     res.json({ ok: true })
   } catch (err) {

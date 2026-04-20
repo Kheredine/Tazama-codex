@@ -1,12 +1,11 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import OpenAI from 'openai'
-import db from '../db.js'
+import pool from '../db.js'
 import { verifyToken, requirePremium } from '../middleware/auth.js'
 
 const router = Router()
 
-// Lazy OpenAI init
 let _openai = null
 const openai = () => {
   if (!_openai) _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -14,11 +13,12 @@ const openai = () => {
 }
 
 // ── GET /api/user/library ───────────────────────────────────────────────────
-router.get('/library', verifyToken, (req, res) => {
+router.get('/library', verifyToken, async (req, res) => {
   try {
-    const rows = db.prepare(
-      'SELECT * FROM user_library WHERE user_id = ? ORDER BY added_at DESC'
-    ).all(req.user.id)
+    const { rows } = await pool.query(
+      'SELECT * FROM user_library WHERE user_id = $1 ORDER BY added_at DESC',
+      [req.user.id]
+    )
 
     const library = { liked: [], watchlist: [], watched: [], history: [] }
     for (const row of rows) {
@@ -40,54 +40,51 @@ router.get('/library', verifyToken, (req, res) => {
 })
 
 // ── POST /api/user/library/sync ─────────────────────────────────────────────
-router.post('/library/sync', verifyToken, (req, res) => {
+router.post('/library/sync', verifyToken, async (req, res) => {
+  const { liked = [], watchlist = [], watched = [], history = [] } = req.body
+  const userId = req.user.id
+  const client = await pool.connect()
+  let count = 0
+
   try {
-    const { liked = [], watchlist = [], watched = [], history = [] } = req.body
-    const userId = req.user.id
+    await client.query('BEGIN')
+    await client.query('DELETE FROM user_library WHERE user_id = $1', [userId])
 
-    const syncTransaction = db.transaction(() => {
-      db.prepare('DELETE FROM user_library WHERE user_id = ?').run(userId)
-
-      const insert = db.prepare(`
-        INSERT OR IGNORE INTO user_library (user_id, tmdb_id, media_type, title, poster_path, year, list_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `)
-
-      let count = 0
-      const lists = { liked, watchlist, watched, history }
-      for (const [listType, items] of Object.entries(lists)) {
-        for (const item of items) {
-          insert.run(
-            userId,
-            String(item.id),
-            item.type || 'movie',
-            item.title || '',
-            item.poster || null,
-            item.year || null,
-            listType
-          )
-          count++
-        }
+    const lists = { liked, watchlist, watched, history }
+    for (const [listType, items] of Object.entries(lists)) {
+      for (const item of items) {
+        await client.query(
+          `INSERT INTO user_library (user_id, tmdb_id, media_type, title, poster_path, year, list_type)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`,
+          [userId, String(item.id), item.type || 'movie', item.title || '', item.poster || null, item.year || null, listType]
+        )
+        count++
       }
-      return count
-    })
+    }
 
-    const count = syncTransaction()
+    await client.query('COMMIT')
     res.json({ ok: true, count })
   } catch (err) {
+    await client.query('ROLLBACK')
     console.error('Sync library error:', err.message)
     res.status(500).json({ error: 'Failed to sync library' })
+  } finally {
+    client.release()
   }
 })
 
 // ── GET /api/user/preferences ───────────────────────────────────────────────
-router.get('/preferences', verifyToken, (req, res) => {
+router.get('/preferences', verifyToken, async (req, res) => {
   try {
-    const row = db.prepare('SELECT * FROM user_preferences WHERE user_id = ?').get(req.user.id)
-    if (!row) {
+    const { rows } = await pool.query(
+      'SELECT * FROM user_preferences WHERE user_id = $1',
+      [req.user.id]
+    )
+    if (!rows[0]) {
       return res.json({ preferences: { likedMoods: {}, dislikedItems: [], sessionMoods: [] } })
     }
 
+    const row = rows[0]
     res.json({
       preferences: {
         likedMoods:    JSON.parse(row.liked_moods   || '{}'),
@@ -102,24 +99,20 @@ router.get('/preferences', verifyToken, (req, res) => {
 })
 
 // ── POST /api/user/preferences/sync ────────────────────────────────────────
-router.post('/preferences/sync', verifyToken, (req, res) => {
+router.post('/preferences/sync', verifyToken, async (req, res) => {
   try {
     const { likedMoods = {}, dislikedItems = [], sessionMoods = [] } = req.body
     const userId = req.user.id
 
-    db.prepare(`
-      INSERT INTO user_preferences (user_id, liked_moods, disliked_items, session_moods, updated_at)
-      VALUES (?, ?, ?, ?, unixepoch())
-      ON CONFLICT(user_id) DO UPDATE SET
-        liked_moods    = excluded.liked_moods,
-        disliked_items = excluded.disliked_items,
-        session_moods  = excluded.session_moods,
-        updated_at     = excluded.updated_at
-    `).run(
-      userId,
-      JSON.stringify(likedMoods),
-      JSON.stringify(dislikedItems),
-      JSON.stringify(sessionMoods)
+    await pool.query(
+      `INSERT INTO user_preferences (user_id, liked_moods, disliked_items, session_moods, updated_at)
+       VALUES ($1, $2, $3, $4, EXTRACT(EPOCH FROM NOW())::BIGINT)
+       ON CONFLICT (user_id) DO UPDATE SET
+         liked_moods    = EXCLUDED.liked_moods,
+         disliked_items = EXCLUDED.disliked_items,
+         session_moods  = EXCLUDED.session_moods,
+         updated_at     = EXCLUDED.updated_at`,
+      [userId, JSON.stringify(likedMoods), JSON.stringify(dislikedItems), JSON.stringify(sessionMoods)]
     )
 
     res.json({ ok: true })
@@ -130,7 +123,6 @@ router.post('/preferences/sync', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/user/profile ──────────────────────────────────────────────────
-// Update username, avatar, bio, privacy settings
 router.put('/profile', verifyToken, async (req, res) => {
   try {
     const {
@@ -144,32 +136,37 @@ router.put('/profile', verifyToken, async (req, res) => {
     } = req.body
     const userId = req.user.id
 
-    const current = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
-    if (!current) return res.status(404).json({ error: 'User not found' })
+    const { rows: cur } = await pool.query('SELECT * FROM users WHERE id = $1', [userId])
+    if (!cur[0]) return res.status(404).json({ error: 'User not found' })
+    const current = cur[0]
 
-    db.prepare(`
-      UPDATE users SET
-        username          = ?,
-        avatar            = ?,
-        bio               = ?,
-        is_discoverable   = ?,
-        privacy_liked     = ?,
-        privacy_watchlist = ?,
-        privacy_watched   = ?
-      WHERE id = ?
-    `).run(
-      (username || current.username).trim(),
-      avatar    ?? current.avatar    ?? '🎬',
-      bio       ?? current.bio       ?? '',
-      is_discoverable !== undefined ? (is_discoverable ? 1 : 0) : current.is_discoverable,
-      privacy_liked     || current.privacy_liked     || 'public',
-      privacy_watchlist || current.privacy_watchlist || 'public',
-      privacy_watched   || current.privacy_watched   || 'public',
-      userId
+    await pool.query(
+      `UPDATE users SET
+        username          = $1,
+        avatar            = $2,
+        bio               = $3,
+        is_discoverable   = $4,
+        privacy_liked     = $5,
+        privacy_watchlist = $6,
+        privacy_watched   = $7
+       WHERE id = $8`,
+      [
+        (username || current.username).trim(),
+        avatar    ?? current.avatar    ?? '🎬',
+        bio       ?? current.bio       ?? '',
+        is_discoverable !== undefined ? (is_discoverable ? 1 : 0) : current.is_discoverable,
+        privacy_liked     || current.privacy_liked     || 'public',
+        privacy_watchlist || current.privacy_watchlist || 'public',
+        privacy_watched   || current.privacy_watched   || 'public',
+        userId,
+      ]
     )
 
-    const updated = db.prepare('SELECT id, email, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched FROM users WHERE id = ?').get(userId)
-    res.json({ ok: true, user: updated })
+    const { rows: updated } = await pool.query(
+      'SELECT id, email, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched FROM users WHERE id = $1',
+      [userId]
+    )
+    res.json({ ok: true, user: updated[0] })
   } catch (err) {
     console.error('Update profile error:', err.message)
     res.status(500).json({ error: 'Failed to update profile' })
@@ -177,7 +174,6 @@ router.put('/profile', verifyToken, async (req, res) => {
 })
 
 // ── PUT /api/user/passcode ─────────────────────────────────────────────────
-// Change 4-digit passcode
 router.put('/passcode', verifyToken, async (req, res) => {
   try {
     const { currentPasscode, newPasscode } = req.body
@@ -190,14 +186,14 @@ router.put('/passcode', verifyToken, async (req, res) => {
       return res.status(400).json({ error: 'Passcode must be exactly 4 digits' })
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId)
-    if (!user) return res.status(404).json({ error: 'User not found' })
+    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [userId])
+    if (!rows[0]) return res.status(404).json({ error: 'User not found' })
 
-    const valid = await bcrypt.compare(String(currentPasscode), user.password_hash)
+    const valid = await bcrypt.compare(String(currentPasscode), rows[0].password_hash)
     if (!valid) return res.status(401).json({ error: 'Current passcode is incorrect' })
 
     const hash = await bcrypt.hash(String(newPasscode), 12)
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId)
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, userId])
 
     res.json({ ok: true })
   } catch (err) {
@@ -207,19 +203,18 @@ router.put('/passcode', verifyToken, async (req, res) => {
 })
 
 // ── GET /api/user/site-settings ────────────────────────────────────────────
-router.get('/site-settings', verifyToken, (req, res) => {
+router.get('/site-settings', verifyToken, async (req, res) => {
   try {
-    const row = db.prepare('SELECT * FROM user_site_settings WHERE user_id = ?').get(req.user.id)
-    if (!row) {
+    const { rows } = await pool.query(
+      'SELECT * FROM user_site_settings WHERE user_id = $1',
+      [req.user.id]
+    )
+    if (!rows[0]) {
       return res.json({
-        settings: {
-          favActors:      [],
-          excludedTags:   [],
-          nicheBalance:   50,
-          trailerAutoplay: 'click',
-        }
+        settings: { favActors: [], excludedTags: [], nicheBalance: 50, trailerAutoplay: 'click' }
       })
     }
+    const row = rows[0]
     res.json({
       settings: {
         favActors:       JSON.parse(row.fav_actors    || '[]'),
@@ -235,7 +230,7 @@ router.get('/site-settings', verifyToken, (req, res) => {
 })
 
 // ── PUT /api/user/site-settings ────────────────────────────────────────────
-router.put('/site-settings', verifyToken, (req, res) => {
+router.put('/site-settings', verifyToken, async (req, res) => {
   try {
     const {
       favActors      = [],
@@ -244,21 +239,16 @@ router.put('/site-settings', verifyToken, (req, res) => {
       trailerAutoplay = 'click',
     } = req.body
 
-    db.prepare(`
-      INSERT INTO user_site_settings (user_id, fav_actors, excluded_tags, niche_balance, trailer_autoplay, updated_at)
-      VALUES (?, ?, ?, ?, ?, unixepoch())
-      ON CONFLICT(user_id) DO UPDATE SET
-        fav_actors       = excluded.fav_actors,
-        excluded_tags    = excluded.excluded_tags,
-        niche_balance    = excluded.niche_balance,
-        trailer_autoplay = excluded.trailer_autoplay,
-        updated_at       = excluded.updated_at
-    `).run(
-      req.user.id,
-      JSON.stringify(favActors),
-      JSON.stringify(excludedTags),
-      nicheBalance,
-      trailerAutoplay
+    await pool.query(
+      `INSERT INTO user_site_settings (user_id, fav_actors, excluded_tags, niche_balance, trailer_autoplay, updated_at)
+       VALUES ($1, $2, $3, $4, $5, EXTRACT(EPOCH FROM NOW())::BIGINT)
+       ON CONFLICT (user_id) DO UPDATE SET
+         fav_actors       = EXCLUDED.fav_actors,
+         excluded_tags    = EXCLUDED.excluded_tags,
+         niche_balance    = EXCLUDED.niche_balance,
+         trailer_autoplay = EXCLUDED.trailer_autoplay,
+         updated_at       = EXCLUDED.updated_at`,
+      [req.user.id, JSON.stringify(favActors), JSON.stringify(excludedTags), nicheBalance, trailerAutoplay]
     )
 
     res.json({ ok: true })
@@ -269,61 +259,59 @@ router.put('/site-settings', verifyToken, (req, res) => {
 })
 
 // ── GET /api/user/public/:userId ───────────────────────────────────────────
-// Public profile (used by user search/profile pages)
-router.get('/public/:userId', verifyToken, (req, res) => {
+router.get('/public/:userId', verifyToken, async (req, res) => {
   try {
     const targetId = Number(req.params.userId)
     const viewer   = req.user.id
 
-    const user = db.prepare(
-      'SELECT id, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched, created_at, watcher_title, watcher_level FROM users WHERE id = ?'
-    ).get(targetId)
+    const { rows: userRows } = await pool.query(
+      'SELECT id, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched, created_at, watcher_title, watcher_level FROM users WHERE id = $1',
+      [targetId]
+    )
+    const user = userRows[0]
 
     if (!user || !user.is_discoverable) {
       return res.status(404).json({ error: 'User not found or not discoverable' })
     }
 
-    // Mate count (accepted connections — bidirectional, count one side)
-    const mateCount = db.prepare('SELECT COUNT(*) as c FROM social_connections WHERE follower_id = ?').get(targetId).c
+    const { rows: countRows } = await pool.query(
+      'SELECT COUNT(*)::INTEGER as c FROM social_connections WHERE follower_id = $1',
+      [targetId]
+    )
+    const mateCount = countRows[0].c
 
-    // Library (respect privacy)
-    const getList = (listType, privacyField) => {
+    const getList = async (listType, privacyField) => {
       if (viewer === targetId || user[privacyField] === 'public') {
-        return db.prepare(
-          'SELECT tmdb_id as id, media_type as type, title, poster_path as poster, year FROM user_library WHERE user_id = ? AND list_type = ? ORDER BY added_at DESC LIMIT 20'
-        ).all(targetId, listType)
+        const { rows } = await pool.query(
+          'SELECT tmdb_id as id, media_type as type, title, poster_path as poster, year FROM user_library WHERE user_id = $1 AND list_type = $2 ORDER BY added_at DESC LIMIT 20',
+          [targetId, listType]
+        )
+        return rows
       }
-      return null // private
+      return null
     }
 
-    const posts = db.prepare(`
-      SELECT p.id, p.title, p.description, p.tags, p.created_at, p.is_shared,
-             COUNT(pi.id) as item_count
-      FROM playlists p
-      LEFT JOIN playlist_items pi ON pi.playlist_id = p.id
-      WHERE p.user_id = ? AND p.is_shared = 1
-      GROUP BY p.id
-      ORDER BY p.created_at DESC
-    `).all(targetId).map((playlist) => ({
-      ...playlist,
-      tags: JSON.parse(playlist.tags || '[]'),
-    }))
+    const { rows: playlistRows } = await pool.query(
+      `SELECT p.id, p.title, p.description, p.tags, p.created_at, p.is_shared,
+              COUNT(pi.id)::INTEGER as item_count
+       FROM playlists p
+       LEFT JOIN playlist_items pi ON pi.playlist_id = p.id
+       WHERE p.user_id = $1 AND p.is_shared = 1
+       GROUP BY p.id
+       ORDER BY p.created_at DESC`,
+      [targetId]
+    )
 
-    const mates = db.prepare(`
-      SELECT u.id, u.username, u.avatar, u.plan, u.watcher_title
-      FROM social_connections sc
-      JOIN users u ON u.id = sc.following_id
-      WHERE sc.follower_id = ?
-        AND COALESCE(u.is_discoverable, 1) != 0
-      ORDER BY u.username COLLATE NOCASE ASC
-      LIMIT 30
-    `).all(targetId).map((mate) => ({
-      id: mate.id,
-      username: mate.username,
-      avatar: mate.avatar || 'T',
-      plan: mate.plan,
-      watcher_title: mate.watcher_title || null,
-    }))
+    const { rows: mateRows } = await pool.query(
+      `SELECT u.id, u.username, u.avatar, u.plan, u.watcher_title
+       FROM social_connections sc
+       JOIN users u ON u.id = sc.following_id
+       WHERE sc.follower_id = $1
+         AND COALESCE(u.is_discoverable, 1) != 0
+       ORDER BY LOWER(u.username) ASC
+       LIMIT 30`,
+      [targetId]
+    )
 
     res.json({
       user: {
@@ -337,11 +325,17 @@ router.get('/public/:userId', verifyToken, (req, res) => {
         watcher_level: user.watcher_level || 0,
       },
       mateCount,
-      liked:     getList('liked',     'privacy_liked'),
-      watchlist: getList('watchlist', 'privacy_watchlist'),
-      watched:   getList('watched',   'privacy_watched'),
-      posts,
-      mates,
+      liked:     await getList('liked',     'privacy_liked'),
+      watchlist: await getList('watchlist', 'privacy_watchlist'),
+      watched:   await getList('watched',   'privacy_watched'),
+      posts:     playlistRows.map(p => ({ ...p, tags: JSON.parse(p.tags || '[]') })),
+      mates:     mateRows.map(m => ({
+        id:            m.id,
+        username:      m.username,
+        avatar:        m.avatar || '🎬',
+        plan:          m.plan,
+        watcher_title: m.watcher_title || null,
+      })),
     })
   } catch (err) {
     console.error('Get public profile error:', err.message)
@@ -350,8 +344,7 @@ router.get('/public/:userId', verifyToken, (req, res) => {
 })
 
 // ── POST /api/user/update-watcher-level ────────────────────────────────────
-// Called by frontend when user reaches interaction milestones
-router.post('/update-watcher-level', verifyToken, (req, res) => {
+router.post('/update-watcher-level', verifyToken, async (req, res) => {
   try {
     const { interactionCount = 0 } = req.body
     const userId = req.user.id
@@ -369,20 +362,18 @@ router.post('/update-watcher-level', verifyToken, (req, res) => {
     const matched = levels.find(l => interactionCount >= l.min)
     const { title, level } = matched || levels[levels.length - 1]
 
-    // Get current level
-    const current = db.prepare('SELECT watcher_level FROM users WHERE id = ?').get(userId)
-    const currentLevel = current?.watcher_level ?? 0
+    const { rows } = await pool.query('SELECT watcher_level FROM users WHERE id = $1', [userId])
+    const currentLevel = rows[0]?.watcher_level ?? 0
 
-    // Update only if level increased
     if (level > currentLevel) {
-      db.prepare('UPDATE users SET watcher_level = ?, watcher_title = ? WHERE id = ?')
-        .run(level, title, userId)
-
-      // Send notification
-      db.prepare(`
-        INSERT INTO notifications (user_id, type, content)
-        VALUES (?, 'watcher_level', ?)
-      `).run(userId, `🎬 You've earned a new Watcher Title: ${title}!`)
+      await pool.query(
+        'UPDATE users SET watcher_level = $1, watcher_title = $2 WHERE id = $3',
+        [level, title, userId]
+      )
+      await pool.query(
+        `INSERT INTO notifications (user_id, type, content) VALUES ($1, 'watcher_level', $2)`,
+        [userId, `🎬 You've earned a new Watcher Title: ${title}!`]
+      )
     }
 
     res.json({ ok: true, title, level })
@@ -393,12 +384,15 @@ router.post('/update-watcher-level', verifyToken, (req, res) => {
 })
 
 // ── GET /api/user/watcher-title ────────────────────────────────────────────
-router.get('/watcher-title', verifyToken, (req, res) => {
+router.get('/watcher-title', verifyToken, async (req, res) => {
   try {
-    const row = db.prepare('SELECT watcher_title, watcher_level FROM users WHERE id = ?').get(req.user.id)
+    const { rows } = await pool.query(
+      'SELECT watcher_title, watcher_level FROM users WHERE id = $1',
+      [req.user.id]
+    )
     res.json({
-      title: row?.watcher_title || 'Novice Watcher',
-      level: row?.watcher_level ?? 0,
+      title: rows[0]?.watcher_title || 'Novice Watcher',
+      level: rows[0]?.watcher_level ?? 0,
     })
   } catch (err) {
     console.error('Get watcher title error:', err.message)
@@ -407,7 +401,6 @@ router.get('/watcher-title', verifyToken, (req, res) => {
 })
 
 // ── POST /api/user/generate-title ──────────────────────────────────────────
-// Premium only — generates a funny, insightful watcher personality title
 router.post('/generate-title', verifyToken, requirePremium, async (req, res) => {
   try {
     const {

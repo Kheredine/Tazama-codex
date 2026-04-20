@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { readFileSync } from 'fs'
-import db from '../db.js'
+import pool from '../db.js'
 import { verifyToken, JWT_SECRET } from '../middleware/auth.js'
 
 const router = Router()
@@ -18,8 +18,6 @@ const signToken = (user) =>
   )
 
 // ── POST /api/auth/register ─────────────────────────────────────────────────
-// Accepts { username }, generates a 4-digit passcode, returns it once (plaintext).
-// The user must then verify by calling /login — they are NOT auto-signed in here.
 router.post('/register', async (req, res) => {
   try {
     const { username } = req.body
@@ -30,29 +28,29 @@ router.post('/register', async (req, res) => {
 
     const trimmed = username.trim()
 
-    const existing = db.prepare('SELECT id FROM users WHERE lower(username) = lower(?)').get(trimmed)
-    if (existing) {
+    const { rows: existing } = await pool.query(
+      'SELECT id FROM users WHERE lower(username) = lower($1)',
+      [trimmed]
+    )
+    if (existing[0]) {
       return res.status(409).json({ error: 'This username is already taken' })
     }
 
-    // Generate 4-digit passcode (1000–9999)
     const passcode = String(Math.floor(1000 + Math.random() * 9000))
     const password_hash = await bcrypt.hash(passcode, 12)
-
-    // Auto-generate a unique internal email
     const email = `${trimmed.toLowerCase().replace(/\s+/g, '_')}@tazama.local`
 
-    const result = db.prepare(
-      'INSERT INTO users (email, username, password_hash, plan) VALUES (?, ?, ?, ?)'
-    ).run(email, trimmed, password_hash, 'standard')
+    const { rows: inserted } = await pool.query(
+      'INSERT INTO users (email, username, password_hash, plan) VALUES ($1, $2, $3, $4) RETURNING id',
+      [email, trimmed, password_hash, 'standard']
+    )
+    const userId = inserted[0].id
 
-    const userId = result.lastInsertRowid
-
-    db.prepare('INSERT INTO user_preferences (user_id) VALUES (?)').run(userId)
+    await pool.query('INSERT INTO user_preferences (user_id) VALUES ($1)', [userId])
 
     res.status(201).json({ passcode })
   } catch (err) {
-    if (err.message?.includes('UNIQUE')) {
+    if (err.code === '23505') {
       return res.status(409).json({ error: 'This username is already taken' })
     }
     console.error('Register error:', err.message)
@@ -61,7 +59,6 @@ router.post('/register', async (req, res) => {
 })
 
 // ── POST /api/auth/login ────────────────────────────────────────────────────
-// Accepts { username, passcode }
 router.post('/login', async (req, res) => {
   try {
     const { username, passcode } = req.body
@@ -70,14 +67,18 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Username and passcode are required' })
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE lower(username) = lower(?)').get(username.trim())
+    const { rows } = await pool.query(
+      'SELECT * FROM users WHERE lower(username) = lower($1)',
+      [username.trim()]
+    )
+    const user = rows[0]
     if (!user) {
-      return res.status(401).json({ error: 'Invalid username or passcode' })
+      return res.status(401).json({ error: 'No account found with that username' })
     }
 
     const valid = await bcrypt.compare(String(passcode), user.password_hash)
     if (!valid) {
-      return res.status(401).json({ error: 'Invalid username or passcode' })
+      return res.status(401).json({ error: 'Incorrect passcode for this username' })
     }
 
     const payload = { id: user.id, email: user.email, username: user.username, plan: user.plan }
@@ -91,12 +92,18 @@ router.post('/login', async (req, res) => {
 })
 
 // ── GET /api/auth/me ────────────────────────────────────────────────────────
-router.get('/me', verifyToken, (req, res) => {
-  const user = db.prepare(
-    'SELECT id, email, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched, created_at FROM users WHERE id = ?'
-  ).get(req.user.id)
-  if (!user) return res.status(404).json({ error: 'User not found' })
-  res.json({ user })
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, email, username, plan, avatar, bio, is_discoverable, privacy_liked, privacy_watchlist, privacy_watched, created_at FROM users WHERE id = $1',
+      [req.user.id]
+    )
+    if (!rows[0]) return res.status(404).json({ error: 'User not found' })
+    res.json({ user: rows[0] })
+  } catch (err) {
+    console.error('Me error:', err.message)
+    res.status(500).json({ error: 'Failed to fetch user' })
+  }
 })
 
 // ── POST /api/auth/logout ───────────────────────────────────────────────────
@@ -118,8 +125,6 @@ router.get('/premium-questions', (req, res) => {
 })
 
 // ── POST /api/auth/reset-passcode ──────────────────────────────────────────
-// Accepts { username }, generates a fresh 4-digit passcode, returns it once.
-// The old passcode is replaced immediately and cannot be recovered.
 router.post('/reset-passcode', async (req, res) => {
   try {
     const { username } = req.body
@@ -127,18 +132,21 @@ router.post('/reset-passcode', async (req, res) => {
       return res.status(400).json({ error: 'Username is required' })
     }
 
-    const user = db
-      .prepare('SELECT id FROM users WHERE lower(username) = lower(?)')
-      .get(username.trim())
-
-    if (!user) {
+    const { rows } = await pool.query(
+      'SELECT id FROM users WHERE lower(username) = lower($1)',
+      [username.trim()]
+    )
+    if (!rows[0]) {
       return res.status(404).json({ error: 'Username not found' })
     }
 
-    const passcode       = String(Math.floor(1000 + Math.random() * 9000))
-    const password_hash  = await bcrypt.hash(passcode, 12)
+    const passcode      = String(Math.floor(1000 + Math.random() * 9000))
+    const password_hash = await bcrypt.hash(passcode, 12)
 
-    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id)
+    await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [password_hash, rows[0].id]
+    )
 
     res.json({ passcode })
   } catch (err) {
@@ -148,7 +156,7 @@ router.post('/reset-passcode', async (req, res) => {
 })
 
 // ── POST /api/auth/unlock-premium ──────────────────────────────────────────
-router.post('/unlock-premium', verifyToken, (req, res) => {
+router.post('/unlock-premium', verifyToken, async (req, res) => {
   try {
     const { answers } = req.body
 
@@ -168,12 +176,15 @@ router.post('/unlock-premium', verifyToken, (req, res) => {
       return res.status(403).json({ error: 'Incorrect answers — try again' })
     }
 
-    db.prepare('UPDATE users SET plan = ? WHERE id = ?').run('premium', req.user.id)
+    await pool.query('UPDATE users SET plan = $1 WHERE id = $2', ['premium', req.user.id])
 
-    const updatedUser = db.prepare('SELECT id, email, username, plan FROM users WHERE id = ?').get(req.user.id)
-    const token = signToken(updatedUser)
+    const { rows } = await pool.query(
+      'SELECT id, email, username, plan FROM users WHERE id = $1',
+      [req.user.id]
+    )
+    const token = signToken(rows[0])
 
-    res.json({ token, user: updatedUser })
+    res.json({ token, user: rows[0] })
   } catch (err) {
     console.error('Unlock premium error:', err.message)
     res.status(500).json({ error: 'Upgrade failed' })
