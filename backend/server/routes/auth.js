@@ -117,6 +117,36 @@ router.get('/premium-questions', (req, res) => {
   }
 })
 
+// ── POST /api/auth/reset-passcode ──────────────────────────────────────────
+// Accepts { username }, generates a fresh 4-digit passcode, returns it once.
+// The old passcode is replaced immediately and cannot be recovered.
+router.post('/reset-passcode', async (req, res) => {
+  try {
+    const { username } = req.body
+    if (!username?.trim()) {
+      return res.status(400).json({ error: 'Username is required' })
+    }
+
+    const user = db
+      .prepare('SELECT id FROM users WHERE lower(username) = lower(?)')
+      .get(username.trim())
+
+    if (!user) {
+      return res.status(404).json({ error: 'Username not found' })
+    }
+
+    const passcode       = String(Math.floor(1000 + Math.random() * 9000))
+    const password_hash  = await bcrypt.hash(passcode, 12)
+
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id)
+
+    res.json({ passcode })
+  } catch (err) {
+    console.error('Reset passcode error:', err.message)
+    res.status(500).json({ error: 'Reset failed' })
+  }
+})
+
 // ── POST /api/auth/unlock-premium ──────────────────────────────────────────
 router.post('/unlock-premium', verifyToken, (req, res) => {
   try {

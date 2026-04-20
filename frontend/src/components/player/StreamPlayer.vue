@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { ALL_SERVERS, PRIMARY_SERVERS, BACKUP_SERVERS, getEmbedUrl } from '@/utils/servers'
-import { SUBTITLE_LANGUAGES } from '@/utils/subtitles'
+import {
+  ALL_SERVERS, PROVIDER_CATEGORIES, getEmbedUrl,
+  VIDSRC_SERVERS, EMBED_SERVERS, LYNX_SERVERS, DIRECT_SERVERS, MULTI_SERVERS,
+} from '@/utils/servers'
 import { useWatchHistory } from '@/composables/useWatchHistory'
 
 const props = defineProps({
@@ -14,17 +16,25 @@ const props = defineProps({
 const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY
 const IMG_BASE  = 'https://image.tmdb.org/t/p/'
 
-const serverIndex  = ref(parseInt(localStorage.getItem('tazama_server') || '0'))
-const subtitleLang = ref(localStorage.getItem('tazama_sub_lang') || 'en')
-
-const showLangPanel   = ref(false)
+// ── Server state ───────────────────────────────────────────────────────────────
+const serverIndex    = ref(parseInt(localStorage.getItem('tazama_server') || '0'))
+const audioFilter    = ref(localStorage.getItem('tazama_audio_filter') || 'all') // 'all' | 'vf' | 'vostfr'
+const autoFallback   = ref(localStorage.getItem('tazama_auto_fallback') !== 'false')
 const showServerPanel = ref(false)
-const iframeLoading   = ref(true)
-const iframeError     = ref(false)
-const iframeKey       = ref(0)
-const isFullscreen    = ref(false)
-const shareToast      = ref(false)
 
+// ── Collapsible category state (all open by default) ──────────────────────────
+const openCats = ref(Object.fromEntries(PROVIDER_CATEGORIES.map(c => [c.id, true])))
+const toggleCat = (id) => { openCats.value[id] = !openCats.value[id] }
+
+// ── iframe state ───────────────────────────────────────────────────────────────
+const iframeLoading = ref(true)
+const iframeError   = ref(false)
+const iframeKey     = ref(0)
+const isFullscreen  = ref(false)
+const shareToast    = ref(false)
+const fallbackToast = ref(false)
+
+// ── TV state ───────────────────────────────────────────────────────────────────
 const season          = ref(1)
 const episode         = ref(1)
 const tvSeasons       = ref([])
@@ -34,15 +44,37 @@ const showEpisodes    = ref(true)
 
 const { saveToStreamHistory } = useWatchHistory()
 
+// ── Derived ────────────────────────────────────────────────────────────────────
 const currentServer  = computed(() => ALL_SERVERS[serverIndex.value] || ALL_SERVERS[0])
 const currentEpisode = computed(() => episodes.value.find(e => e.episode_number === episode.value))
 const episodeTitle   = computed(() => currentEpisode.value?.name || `Episode ${episode.value}`)
-const subtitleLabel  = computed(() => SUBTITLE_LANGUAGES.find(l => l.code === subtitleLang.value)?.name || 'English')
 
 const embedUrl = computed(() =>
-  getEmbedUrl(currentServer.value, props.type, props.id, season.value, episode.value, subtitleLang.value)
+  getEmbedUrl(currentServer.value, props.type, props.id, season.value, episode.value)
 )
 
+// ── Filtered server list per category ─────────────────────────────────────────
+const filteredByAudio = (servers) => {
+  if (audioFilter.value === 'all') return servers
+  return servers.filter(s =>
+    s.audioMode === audioFilter.value || s.audioMode === 'multi'
+  )
+}
+
+const catServers = (categoryId) => {
+  const map = {
+    vidsrc: VIDSRC_SERVERS,
+    embed:  EMBED_SERVERS,
+    lynx:   LYNX_SERVERS,
+    direct: DIRECT_SERVERS,
+    multi:  MULTI_SERVERS,
+  }
+  return filteredByAudio(map[categoryId] || [])
+}
+
+const globalIndexOf = (server) => ALL_SERVERS.indexOf(server)
+
+// ── TV data ────────────────────────────────────────────────────────────────────
 const fetchTvDetails = async () => {
   if (props.type !== 'tv') return
   try {
@@ -66,6 +98,7 @@ const fetchEpisodes = async (seasonNum) => {
   }
 }
 
+// ── Server switching ───────────────────────────────────────────────────────────
 const switchServer = (idx) => {
   serverIndex.value = idx
   localStorage.setItem('tazama_server', String(idx))
@@ -73,19 +106,56 @@ const switchServer = (idx) => {
   showServerPanel.value = false
 }
 
-const setLanguage = (code) => {
-  subtitleLang.value = code
-  localStorage.setItem('tazama_sub_lang', code)
-  reloadIframe()
-  showLangPanel.value = false
+const tryNextServer = () => {
+  const next = serverIndex.value + 1
+  if (next < ALL_SERVERS.length) {
+    serverIndex.value = next
+    localStorage.setItem('tazama_server', String(next))
+    fallbackToast.value = true
+    setTimeout(() => { fallbackToast.value = false }, 3000)
+    reloadIframe()
+  }
 }
 
+const setAudioFilter = (val) => {
+  audioFilter.value = val
+  localStorage.setItem('tazama_audio_filter', val)
+}
+
+const toggleAutoFallback = () => {
+  autoFallback.value = !autoFallback.value
+  localStorage.setItem('tazama_auto_fallback', String(autoFallback.value))
+}
+
+// ── iframe lifecycle ───────────────────────────────────────────────────────────
 const reloadIframe = () => {
   iframeLoading.value = true
   iframeError.value   = false
   iframeKey.value++
 }
 
+let loadTimer = null
+const onIframeLoad = () => {
+  clearTimeout(loadTimer)
+  iframeLoading.value = false
+}
+const startLoadTimer = () => {
+  clearTimeout(loadTimer)
+  // After 15 s without a load event, treat as a soft error
+  loadTimer = setTimeout(() => {
+    iframeLoading.value = false
+    if (autoFallback.value) tryNextServer()
+  }, 15000)
+}
+
+const onIframeError = () => {
+  clearTimeout(loadTimer)
+  iframeLoading.value = false
+  iframeError.value   = true
+  if (autoFallback.value) tryNextServer()
+}
+
+// ── Episode controls ───────────────────────────────────────────────────────────
 const selectEpisode = (s, e) => {
   season.value  = s
   episode.value = e
@@ -118,14 +188,15 @@ const nextEpisode = async () => {
   persistHistory()
 }
 
+// ── Sharing ────────────────────────────────────────────────────────────────────
 const copyLink = () => {
-  const url = window.location.href
-  navigator.clipboard?.writeText(url).then(() => {
+  navigator.clipboard?.writeText(window.location.href).then(() => {
     shareToast.value = true
     setTimeout(() => { shareToast.value = false }, 2500)
   })
 }
 
+// ── History ────────────────────────────────────────────────────────────────────
 const persistHistory = () => {
   saveToStreamHistory({
     id:          Number(props.id),
@@ -138,24 +209,15 @@ const persistHistory = () => {
   })
 }
 
-let loadTimer = null
-const onIframeLoad = () => {
-  clearTimeout(loadTimer)
-  iframeLoading.value = false
-}
-const startLoadTimer = () => {
-  clearTimeout(loadTimer)
-  loadTimer = setTimeout(() => { iframeLoading.value = false }, 8000)
-}
-
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────────
 const onKey = (e) => {
   if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return
   if (e.key === 'ArrowLeft'  && props.type === 'tv') { prevEpisode(); e.preventDefault() }
   if (e.key === 'ArrowRight' && props.type === 'tv') { nextEpisode(); e.preventDefault() }
   if (e.key === 's' || e.key === 'S') showServerPanel.value = !showServerPanel.value
-  if (e.key === 'l' || e.key === 'L') showLangPanel.value   = !showLangPanel.value
 }
 
+// ── Watchers & lifecycle ───────────────────────────────────────────────────────
 watch(season, async (s) => {
   await fetchEpisodes(s)
   episode.value = 1
@@ -185,10 +247,9 @@ onUnmounted(() => {
       : 'border border-[#7c3aed]/20 shadow-player'"
   >
 
-    <!-- ── Player Header ──────────────────────────────────────────────────────── -->
+    <!-- ── Player Header ─────────────────────────────────────────────────────── -->
     <div class="player-header flex items-center gap-2 px-4 py-3 border-b border-white/8">
 
-      <!-- Title block — always gets remaining space -->
       <div class="flex-1 min-w-0">
         <p class="text-white/90 font-semibold text-sm leading-tight truncate">{{ title }}</p>
         <p v-if="type === 'tv'" class="text-[#a78bfa]/50 text-[11px] mt-0.5 truncate">
@@ -196,25 +257,13 @@ onUnmounted(() => {
         </p>
       </div>
 
-      <!-- Action buttons — icon-only on mobile, icon + label on sm+ -->
       <div class="flex items-center gap-1 shrink-0">
 
-        <!-- Subtitle / Language -->
-        <button
-          class="ctrl-btn"
-          :class="showLangPanel ? 'ctrl-btn--active' : 'ctrl-btn--idle'"
-          @click="showLangPanel = !showLangPanel; showServerPanel = false"
-          title="Subtitles & Language (L)"
-        >
-          <i class="fa-solid fa-globe text-[10px]"></i>
-          <span class="hidden sm:inline max-w-[72px] truncate">{{ subtitleLabel }}</span>
-        </button>
-
-        <!-- Server -->
+        <!-- Server selector -->
         <button
           class="ctrl-btn"
           :class="showServerPanel ? 'ctrl-btn--active' : 'ctrl-btn--idle'"
-          @click="showServerPanel = !showServerPanel; showLangPanel = false"
+          @click="showServerPanel = !showServerPanel"
           title="Switch Server (S)"
         >
           <i class="fa-solid fa-server text-[10px]"></i>
@@ -222,11 +271,7 @@ onUnmounted(() => {
         </button>
 
         <!-- Share -->
-        <button
-          class="icon-btn"
-          @click="copyLink"
-          title="Copy link"
-        >
+        <button class="icon-btn" @click="copyLink" title="Copy link">
           <i class="fa-solid fa-link text-[10px]"></i>
         </button>
 
@@ -242,87 +287,117 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- ── Subtitle / Language Panel ─────────────────────────────────────────── -->
+    <!-- ── Server Panel ──────────────────────────────────────────────────────── -->
     <Transition name="slide-down">
-      <div v-if="showLangPanel" class="panel border-b border-white/8 px-4 py-4 space-y-3">
+      <div v-if="showServerPanel" class="panel border-b border-white/8 px-4 py-4 space-y-4">
 
-        <!-- Info note -->
-        <div class="rounded-xl bg-white/3 border border-white/7 px-3 py-2.5 space-y-1.5 text-[11px] leading-relaxed">
-          <p class="text-white/55">
-            <span class="text-white/75 font-semibold">Sous-titres</span> — transmis via URL.
-            Fonctionne de manière fiable avec <span class="text-[#a78bfa]">VidSrc To</span> (<code class="text-white/40">ds_lang</code>),
-            <span class="text-[#a78bfa]">VidSrc Me</span> &amp; <span class="text-[#a78bfa]">MovieAPI</span> (<code class="text-white/40">sub_lang</code>).
-          </p>
-          <p class="text-white/35">
-            <span class="text-white/55 font-semibold">Audio (VF)</span> — impossible à forcer depuis l'extérieur.
-            Utilisez le sélecteur de piste audio intégré au lecteur si une version doublée est disponible.
-          </p>
+        <!-- Top row: hint + controls -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p class="text-[11px] text-white/30">Having issues? Try a different server below.</p>
+
+          <!-- Auto-fallback toggle -->
+          <button
+            class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[11px] font-medium transition"
+            :class="autoFallback
+              ? 'bg-purple-500/15 border-purple-500/35 text-purple-300'
+              : 'bg-white/4 border-white/10 text-white/40'"
+            @click="toggleAutoFallback"
+            title="When enabled, automatically tries the next server if the current one fails"
+          >
+            <i class="fa-solid fa-rotate text-[9px]"></i>
+            Auto-fallback {{ autoFallback ? 'ON' : 'OFF' }}
+          </button>
         </div>
 
-        <!-- Warning when current server has no subtitle param -->
+        <!-- Audio / Language filter -->
+        <div>
+          <p class="panel-label mb-2">Audio / Subtitles</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="opt in [
+                { val: 'all',    label: 'All Sources' },
+                { val: 'vf',     label: '🇫🇷 VF (Doublé)' },
+                { val: 'vostfr', label: '🇫🇷 VOSTFR' },
+              ]"
+              :key="opt.val"
+              class="pill"
+              :class="audioFilter === opt.val ? 'pill--active' : 'pill--idle'"
+              @click="setAudioFilter(opt.val)"
+            >{{ opt.label }}</button>
+          </div>
+        </div>
+
+        <!-- Category sections -->
         <div
-          v-if="!currentServer.subParam"
-          class="flex items-start gap-2 rounded-xl bg-amber-500/8 border border-amber-500/20 px-3 py-2.5"
+          v-for="cat in PROVIDER_CATEGORIES"
+          :key="cat.id"
+          class="space-y-2"
         >
-          <i class="fa-solid fa-triangle-exclamation text-amber-400/70 text-xs mt-0.5 shrink-0"></i>
-          <p class="text-[11px] text-amber-200/55 leading-relaxed">
-            <span class="font-semibold text-amber-200/75">{{ currentServer.name }}</span> ne prend pas en charge les sous-titres via URL.
-            Passez sur VidSrc To ou VidSrc Me pour les sous-titres français.
-          </p>
+          <!-- Category header (collapsible) -->
+          <button
+            class="w-full flex items-center justify-between group"
+            @click="toggleCat(cat.id)"
+          >
+            <div class="flex items-center gap-2">
+              <i :class="`fa-solid ${cat.icon}`" class="text-[10px] text-white/30"></i>
+              <span class="panel-label">{{ cat.label }}</span>
+              <span class="text-[9px] text-white/20 ml-1">{{ catServers(cat.id).length }}</span>
+            </div>
+            <i
+              :class="openCats[cat.id] ? 'fa-chevron-up' : 'fa-chevron-down'"
+              class="fa-solid text-[9px] text-white/20 group-hover:text-white/50 transition-colors"
+            ></i>
+          </button>
+
+          <!-- Server pills -->
+          <Transition name="slide-down">
+            <div v-if="openCats[cat.id]" class="flex flex-wrap gap-1.5">
+              <template v-if="catServers(cat.id).length">
+                <button
+                  v-for="srv in catServers(cat.id)"
+                  :key="srv.id"
+                  class="pill relative"
+                  :class="serverIndex === globalIndexOf(srv) ? 'pill--active' : 'pill--idle'"
+                  @click="switchServer(globalIndexOf(srv))"
+                  :title="srv.requiresFileId ? `${srv.name} — may require direct file ID` : `Stream via ${srv.name}`"
+                >
+                  {{ srv.name }}
+                  <!-- dot indicator for active server -->
+                  <span
+                    v-if="serverIndex === globalIndexOf(srv)"
+                    class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-purple-400"
+                  ></span>
+                  <!-- warning dot for requiresFileId providers -->
+                  <span
+                    v-else-if="srv.requiresFileId"
+                    class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-500/60"
+                    title="May need direct file ID"
+                  ></span>
+                </button>
+              </template>
+              <p v-else class="text-[11px] text-white/20 italic">
+                No servers match current filter.
+              </p>
+            </div>
+          </Transition>
         </div>
 
-        <p class="panel-label">Langue des sous-titres</p>
-        <div class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1 custom-scroll">
-          <button
-            v-for="lang in SUBTITLE_LANGUAGES"
-            :key="lang.code"
-            class="pill"
-            :class="subtitleLang === lang.code ? 'pill--active' : 'pill--idle'"
-            @click="setLanguage(lang.code)"
-          >
-            {{ lang.name }}
-          </button>
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center gap-4 pt-1 border-t border-white/5">
+          <div class="flex items-center gap-1.5 text-[10px] text-white/25">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 inline-block"></span>
+            Currently active
+          </div>
+          <div class="flex items-center gap-1.5 text-[10px] text-white/25">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500/60 inline-block"></span>
+            May require direct link
+          </div>
         </div>
 
       </div>
     </Transition>
 
-    <!-- ── Server Panel ───────────────────────────────────────────────────────── -->
-    <Transition name="slide-down">
-      <div v-if="showServerPanel" class="panel border-b border-white/8 px-4 py-4">
-        <p class="text-[11px] text-white/25 mb-4">Having issues? Try switching servers below.</p>
-
-        <p class="panel-label mb-2">Primary</p>
-        <div class="flex flex-wrap gap-1.5 mb-4">
-          <button
-            v-for="(srv, idx) in PRIMARY_SERVERS"
-            :key="srv.id"
-            class="pill"
-            :class="serverIndex === idx ? 'pill--active' : 'pill--idle'"
-            @click="switchServer(idx)"
-            :title="`Stream via ${srv.name}`"
-          >
-            {{ srv.name }}
-          </button>
-        </div>
-
-        <p class="panel-label mb-2">Backup</p>
-        <div class="flex flex-wrap gap-1.5">
-          <button
-            v-for="(srv, idx) in BACKUP_SERVERS"
-            :key="srv.id"
-            class="pill"
-            :class="serverIndex === PRIMARY_SERVERS.length + idx ? 'pill--active' : 'pill--idle'"
-            @click="switchServer(PRIMARY_SERVERS.length + idx)"
-            :title="`Stream via ${srv.name}`"
-          >
-            {{ srv.name }}
-          </button>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- ── iframe Area ────────────────────────────────────────────────────────── -->
+    <!-- ── iframe Area ───────────────────────────────────────────────────────── -->
     <div class="relative w-full bg-black" style="padding-top: 56.25%">
 
       <!-- Loading overlay -->
@@ -334,20 +409,28 @@ onUnmounted(() => {
       </Transition>
 
       <!-- Error overlay -->
-      <div v-if="iframeError" class="absolute inset-0 flex flex-col items-center justify-center bg-[#06040f] z-10 gap-5 px-6 text-center">
+      <div v-if="iframeError && !iframeLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-[#06040f] z-10 gap-5 px-6 text-center">
         <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center">
           <i class="fa-solid fa-triangle-exclamation text-amber-400/70 text-xl"></i>
         </div>
         <div class="space-y-1">
           <p class="text-white/70 font-semibold text-sm">Server unavailable</p>
-          <p class="text-white/30 text-xs">Switch to another source to continue watching.</p>
+          <p class="text-white/30 text-xs">{{ currentServer.name }} could not load. Switch to another source.</p>
         </div>
-        <button
-          class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7c3aed]/20 border border-[#7c3aed]/35 text-[#a78bfa] text-sm font-medium hover:bg-[#7c3aed]/30 transition-all"
-          @click="showServerPanel = true; iframeError = false"
-        >
-          <i class="fa-solid fa-server text-xs"></i> Switch Server
-        </button>
+        <div class="flex gap-2">
+          <button
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7c3aed]/20 border border-[#7c3aed]/35 text-[#a78bfa] text-sm font-medium hover:bg-[#7c3aed]/30 transition-all"
+            @click="tryNextServer"
+          >
+            <i class="fa-solid fa-forward-step text-xs"></i> Try Next
+          </button>
+          <button
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/50 text-sm font-medium hover:bg-white/8 transition-all"
+            @click="showServerPanel = true; iframeError = false"
+          >
+            <i class="fa-solid fa-server text-xs"></i> Pick Server
+          </button>
+        </div>
       </div>
 
       <iframe
@@ -358,10 +441,11 @@ onUnmounted(() => {
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
         referrerpolicy="origin"
         @load="onIframeLoad"
+        @error="onIframeError"
       ></iframe>
     </div>
 
-    <!-- ── Controls Bar (TV) ──────────────────────────────────────────────────── -->
+    <!-- ── Controls Bar (TV) ─────────────────────────────────────────────────── -->
     <div v-if="type === 'tv'" class="flex items-center justify-between gap-3 px-4 py-3 bg-[#0d0a1a] border-t border-white/8">
       <button
         class="nav-btn disabled:opacity-25 disabled:cursor-not-allowed"
@@ -372,33 +456,24 @@ onUnmounted(() => {
         <span class="hidden sm:inline">Previous</span>
       </button>
 
-      <select
-        v-model="season"
-        class="season-select"
-      >
+      <select v-model="season" class="season-select">
         <option
           v-for="s in tvSeasons"
           :key="s.season_number"
           :value="s.season_number"
           class="bg-[#0d0a1a]"
-        >
-          Season {{ s.season_number }}
-        </option>
+        >Season {{ s.season_number }}</option>
       </select>
 
-      <button
-        class="nav-btn"
-        @click="nextEpisode"
-      >
+      <button class="nav-btn" @click="nextEpisode">
         <span class="hidden sm:inline">Next</span>
         <i class="fa-solid fa-forward-step text-xs"></i>
       </button>
     </div>
 
-    <!-- ── TV Episode List ────────────────────────────────────────────────────── -->
+    <!-- ── TV Episode List ───────────────────────────────────────────────────── -->
     <div v-if="type === 'tv'" class="bg-[#0a0812] border-t border-white/8">
 
-      <!-- Collapse toggle -->
       <button
         class="w-full flex items-center justify-between px-4 py-3 text-white/40 hover:text-white/70 transition-colors"
         @click="showEpisodes = !showEpisodes"
@@ -421,7 +496,6 @@ onUnmounted(() => {
             :class="ep.episode_number === episode ? 'ep-row--active' : ''"
             @click="selectEpisode(season, ep.episode_number)"
           >
-            <!-- Thumbnail -->
             <div class="ep-thumb">
               <img
                 v-if="ep.still_path"
@@ -440,7 +514,6 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <!-- Episode info -->
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline gap-2 mb-0.5">
                 <span class="text-[10px] text-white/25 font-mono shrink-0">{{ String(ep.episode_number).padStart(2, '0') }}</span>
@@ -455,7 +528,7 @@ onUnmounted(() => {
       </Transition>
     </div>
 
-    <!-- ── Share Toast ────────────────────────────────────────────────────────── -->
+    <!-- ── Share Toast ───────────────────────────────────────────────────────── -->
     <Transition name="toast">
       <div
         v-if="shareToast"
@@ -466,7 +539,18 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <!-- ── Disclaimer ─────────────────────────────────────────────────────────── -->
+    <!-- ── Fallback Toast ─────────────────────────────────────────────────────── -->
+    <Transition name="toast">
+      <div
+        v-if="fallbackToast"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#130f24] border border-amber-500/30 shadow-toast text-sm text-amber-200/80 whitespace-nowrap"
+      >
+        <i class="fa-solid fa-rotate text-amber-400 text-xs"></i>
+        Switching to {{ currentServer.name }}…
+      </div>
+    </Transition>
+
+    <!-- ── Disclaimer ────────────────────────────────────────────────────────── -->
     <p class="text-[10px] text-white/15 text-center px-4 py-2 bg-[#0d0a1a] border-t border-white/5">
       Tazama does not host any files. Content is embedded from third-party services.
     </p>
@@ -475,7 +559,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ── Player shell ─────────────────────────────────────────────────────────── */
+/* ── Player shell ──────────────────────────────────────────────────────────── */
 .shadow-player {
   box-shadow:
     0 0 0 1px rgba(124, 58, 237, 0.12),
@@ -492,9 +576,7 @@ onUnmounted(() => {
 }
 
 /* ── Panels ──────────────────────────────────────────────────────────────── */
-.panel {
-  background: #0c0918;
-}
+.panel { background: #0c0918; }
 .panel-label {
   font-size: 10px;
   font-weight: 700;
@@ -503,7 +585,7 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.28);
 }
 
-/* ── Control buttons (with label) ────────────────────────────────────────── */
+/* ── Control buttons ─────────────────────────────────────────────────────── */
 .ctrl-btn {
   display: inline-flex;
   align-items: center;
@@ -517,29 +599,16 @@ onUnmounted(() => {
   cursor: pointer;
   white-space: nowrap;
 }
-.ctrl-btn--idle {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.45);
-}
-.ctrl-btn--idle:hover {
-  background: rgba(124,58,237,0.1);
-  border-color: rgba(124,58,237,0.25);
-  color: rgba(255,255,255,0.85);
-}
-.ctrl-btn--active {
-  background: rgba(124,58,237,0.18);
-  border-color: rgba(124,58,237,0.4);
-  color: #a78bfa;
-}
+.ctrl-btn--idle  { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.45); }
+.ctrl-btn--idle:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); color: rgba(255,255,255,0.85); }
+.ctrl-btn--active { background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.4); color: #a78bfa; }
 
-/* ── Icon-only buttons ───────────────────────────────────────────────────── */
+/* ── Icon buttons ────────────────────────────────────────────────────────── */
 .icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 30px; height: 30px;
   border-radius: 8px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
@@ -548,14 +617,11 @@ onUnmounted(() => {
   cursor: pointer;
   flex-shrink: 0;
 }
-.icon-btn:hover {
-  background: rgba(124,58,237,0.1);
-  border-color: rgba(124,58,237,0.25);
-  color: rgba(255,255,255,0.85);
-}
+.icon-btn:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); color: rgba(255,255,255,0.85); }
 
-/* ── Pill buttons (server / lang selectors) ──────────────────────────────── */
+/* ── Pills ───────────────────────────────────────────────────────────────── */
 .pill {
+  position: relative;
   padding: 5px 11px;
   border-radius: 8px;
   font-size: 11px;
@@ -564,38 +630,22 @@ onUnmounted(() => {
   transition: all 0.15s ease;
   cursor: pointer;
 }
-.pill--idle {
-  background: rgba(255,255,255,0.04);
-  border-color: rgba(255,255,255,0.07);
-  color: rgba(255,255,255,0.45);
-}
-.pill--idle:hover {
-  background: rgba(124,58,237,0.1);
-  border-color: rgba(124,58,237,0.25);
-  color: rgba(255,255,255,0.85);
-}
-.pill--active {
-  background: rgba(124,58,237,0.2);
-  border-color: rgba(124,58,237,0.42);
-  color: #a78bfa;
-}
+.pill--idle  { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45); }
+.pill--idle:hover { background: rgba(124,58,237,0.1); border-color: rgba(124,58,237,0.25); color: rgba(255,255,255,0.85); }
+.pill--active { background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.42); color: #a78bfa; }
 
-/* ── Loading spinner ─────────────────────────────────────────────────────── */
+/* ── Spinner ─────────────────────────────────────────────────────────────── */
 .spinner {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border: 2px solid rgba(124, 58, 237, 0.15);
   border-top-color: #7c3aed;
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
-.spinner--sm {
-  width: 20px;
-  height: 20px;
-}
+.spinner--sm { width: 20px; height: 20px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Nav buttons (prev/next episode) ─────────────────────────────────────── */
+/* ── Nav buttons ─────────────────────────────────────────────────────────── */
 .nav-btn {
   display: flex;
   align-items: center;
@@ -610,11 +660,7 @@ onUnmounted(() => {
   transition: all 0.15s ease;
   cursor: pointer;
 }
-.nav-btn:not(:disabled):hover {
-  background: rgba(124,58,237,0.12);
-  border-color: rgba(124,58,237,0.28);
-  color: rgba(255,255,255,0.9);
-}
+.nav-btn:not(:disabled):hover { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.28); color: rgba(255,255,255,0.9); }
 
 /* ── Season select ───────────────────────────────────────────────────────── */
 .season-select {
@@ -630,12 +676,9 @@ onUnmounted(() => {
   appearance: none;
   text-align: center;
 }
-.season-select:focus {
-  outline: none;
-  border-color: rgba(124,58,237,0.45);
-}
+.season-select:focus { outline: none; border-color: rgba(124,58,237,0.45); }
 
-/* ── Episode row ─────────────────────────────────────────────────────────── */
+/* ── Episode rows ────────────────────────────────────────────────────────── */
 .ep-row {
   display: flex;
   align-items: flex-start;
@@ -647,24 +690,17 @@ onUnmounted(() => {
 }
 .ep-row:last-child { border-bottom: none; }
 .ep-row:not(.ep-row--active):hover { background: rgba(255,255,255,0.025); }
-.ep-row--active {
-  background: rgba(124,58,237,0.07);
-  border-left: 2px solid rgba(124,58,237,0.5);
-  padding-left: 14px;
-}
+.ep-row--active { background: rgba(124,58,237,0.07); border-left: 2px solid rgba(124,58,237,0.5); padding-left: 14px; }
 
-/* ── Episode thumbnail ───────────────────────────────────────────────────── */
 .ep-thumb {
   flex-shrink: 0;
-  width: 80px;
-  height: 48px;
+  width: 80px; height: 48px;
   border-radius: 8px;
   overflow: hidden;
   background: rgba(255,255,255,0.05);
   position: relative;
 }
 
-/* ── Now playing badge ───────────────────────────────────────────────────── */
 .now-playing-badge {
   font-size: 9px;
   font-weight: 700;
@@ -674,16 +710,11 @@ onUnmounted(() => {
   opacity: 0.9;
 }
 
-/* ── Custom scrollbar ────────────────────────────────────────────────────── */
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
 .custom-scroll::-webkit-scrollbar { width: 3px; }
 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: rgba(124,58,237,0.3);
-  border-radius: 99px;
-}
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(124,58,237,0.55);
-}
+.custom-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 99px; }
+.custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.55); }
 
 /* ── Transitions ─────────────────────────────────────────────────────────── */
 .slide-down-enter-active, .slide-down-leave-active { transition: all 0.2s ease; }
