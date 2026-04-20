@@ -446,8 +446,13 @@ onMounted(() => {
 /* ── Individual card ─────────────────────────────────────── */
 .scroll-card {
   flex-shrink: 0;
-  width: 140px;
+  width: 120px;
   cursor: pointer;
+}
+
+@media (min-width: 380px) {
+  .scroll-card { width: 140px; }
+  .poster-wrap { height: 210px; }
 }
 
 @media (min-width: 640px) {
@@ -458,7 +463,7 @@ onMounted(() => {
 .poster-wrap {
   position: relative;
   width: 100%;
-  height: 210px;
+  height: 180px;
   border-radius: 10px;
   overflow: hidden;
   background: rgba(255,255,255,0.05);

@@ -303,9 +303,9 @@ const saveToPlaylist = async (playlist) => {
       </div>
 
       <!-- Main info row -->
-      <div class="flex flex-col md:flex-row gap-8 mb-10 -mt-24 relative px-2">
+      <div class="flex flex-col md:flex-row gap-6 md:gap-8 mb-10 -mt-12 sm:-mt-20 md:-mt-24 relative">
         <!-- Poster -->
-        <div class="shrink-0 w-36 md:w-48 mx-auto md:mx-0">
+        <div class="shrink-0 w-28 sm:w-36 md:w-48 mx-auto md:mx-0">
           <img v-if="poster" :src="poster" :alt="title" class="w-full rounded-xl shadow-2xl" />
           <div v-else class="w-full aspect-[2/3] rounded-xl bg-white/5 flex items-center justify-center">
             <i class="fa-solid fa-film text-white/20 text-4xl"></i>
@@ -359,7 +359,7 @@ const saveToPlaylist = async (playlist) => {
           <!-- Action buttons -->
           <div class="flex flex-wrap gap-2 mt-2">
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition bg-white/5 text-white/60 border border-white/10 hover:border-purple-500/40 hover:text-purple-300"
+              class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition bg-white/5 text-white/60 border border-white/10 hover:border-purple-500/40 hover:text-purple-300"
               @click="openPlaylistModal"
             >
               <i class="fa-solid fa-list text-xs"></i>
@@ -368,7 +368,7 @@ const saveToPlaylist = async (playlist) => {
 
             <!-- Like -->
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition"
+              class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition"
               :class="isLiked(libItem) ? 'bg-red-500/20 text-red-400 border border-red-500/40' : 'bg-white/5 text-white/60 border border-white/10 hover:border-red-500/40 hover:text-red-400'"
               @click="toggleLike(libItem)"
             >
@@ -378,7 +378,7 @@ const saveToPlaylist = async (playlist) => {
 
             <!-- Watchlist -->
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition"
+              class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition"
               :class="isInWatchlist(libItem) ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' : 'bg-white/5 text-white/60 border border-white/10 hover:border-blue-500/40 hover:text-blue-400'"
               @click="toggleWatchlist(libItem)"
             >
@@ -388,7 +388,7 @@ const saveToPlaylist = async (playlist) => {
 
             <!-- Watched -->
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition"
+              class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition"
               :class="isWatched(libItem) ? 'bg-green-500/20 text-green-400 border border-green-500/40' : 'bg-white/5 text-white/60 border border-white/10 hover:border-green-500/40 hover:text-green-400'"
               @click="toggleWatched(libItem)"
             >
@@ -400,7 +400,7 @@ const saveToPlaylist = async (playlist) => {
             <Transition name="expand">
               <button
                 v-if="!notForMeDone"
-                class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition"
+                class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition"
                 :class="notForMeConfirm
                   ? 'bg-orange-500/25 text-orange-400 border border-orange-500/50'
                   : 'bg-white/5 text-white/45 border border-white/10 hover:border-orange-500/40 hover:text-orange-400'"
@@ -411,7 +411,7 @@ const saveToPlaylist = async (playlist) => {
               </button>
             </Transition>
             <div v-if="notForMeDone"
-                 class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-orange-400/60 border border-orange-500/20">
+                 class="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium text-orange-400/60 border border-orange-500/20">
               <i class="fa-solid fa-check text-xs"></i>Removed from suggestions
             </div>
           </div>
@@ -430,18 +430,18 @@ const saveToPlaylist = async (playlist) => {
           <div
             v-for="actor in cast"
             :key="actor.id"
-            class="shrink-0 flex flex-col items-center gap-2 w-20"
+            class="shrink-0 flex flex-col items-center gap-2 w-16 sm:w-20"
           >
             <img
               v-if="actor.profile_path"
               :src="`${IMG_BASE}w185${actor.profile_path}`"
               :alt="actor.name"
-              class="w-16 h-16 rounded-full object-cover border border-white/10"
+              class="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover border border-white/10"
             />
-            <div v-else class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+            <div v-else class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 flex items-center justify-center">
               <i class="fa-solid fa-user text-white/30"></i>
             </div>
-            <p class="text-white/70 text-[11px] text-center leading-tight">{{ actor.name }}</p>
+            <p class="text-white/70 text-[10px] sm:text-[11px] text-center leading-tight truncate w-full">{{ actor.name }}</p>
           </div>
         </div>
       </div>
@@ -583,7 +583,7 @@ const saveToPlaylist = async (playlist) => {
     >
       <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closePlaylistModal"></div>
 
-      <div class="relative w-full max-w-lg rounded-2xl border border-white/10 bg-[#120f1f] shadow-2xl overflow-hidden">
+      <div class="relative w-full max-w-sm sm:max-w-lg rounded-2xl border border-white/10 bg-[#120f1f] shadow-2xl overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-white/8">
           <div>
             <h2 class="text-white font-semibold">Save to playlist</h2>
