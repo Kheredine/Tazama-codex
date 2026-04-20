@@ -96,12 +96,12 @@ const fetchAllRows = async () => {
     tmdb('/discover/tv',    { sort_by: 'first_air_date.asc', 'first_air_date.gte': today, 'first_air_date.lte': endOfYear, 'vote_count.gte': '5' }),
   ])
 
-  trending.value = grab15(trendingData)
-  films.value    = grab15(filmsData)
-  series.value   = grab15(seriesData)
-  anime.value    = grab15(animeData)
-  tvShows.value  = grab15(tvData)
-  docs.value     = grab15(docsData)
+  trending.value = grab15(trendingData) // already has media_type from TMDB
+  films.value    = grab15(filmsData).map(i => ({ ...i, media_type: 'movie' }))
+  series.value   = grab15(seriesData).map(i => ({ ...i, media_type: 'tv' }))
+  anime.value    = grab15(animeData).map(i => ({ ...i, media_type: 'tv' }))
+  tvShows.value  = grab15(tvData).map(i => ({ ...i, media_type: 'tv' }))
+  docs.value     = grab15(docsData).map(i => ({ ...i, media_type: 'movie' }))
 
   const soonMovies = (upcomingMoviesData.results || []).map(m => ({ ...m, _type: 'movie', _releaseDate: m.release_date }))
   const soonTv     = (upcomingTvData.results    || []).map(t => ({ ...t, _type: 'tv',    _releaseDate: t.first_air_date }))

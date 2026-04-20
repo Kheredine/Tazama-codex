@@ -14,6 +14,7 @@ const loadingConvs    = ref(true)
 const loadingThread   = ref(false)
 const sending         = ref(false)
 const threadEl        = ref(null)
+const mobileShowThread = ref(false)
 let   pollTimer       = null
 
 // ── Load conversations ────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ const openThread = async (userId) => {
   loadingThread.value = true
   messages.value      = []
   otherUser.value     = null
+  mobileShowThread.value = true
   try {
     const data = await apiFetch(`/api/messages/${userId}`)
     messages.value  = data.messages  || []
@@ -41,6 +43,10 @@ const openThread = async (userId) => {
     scrollToBottom()
   } catch { /* ignore */ }
   finally { loadingThread.value = false }
+}
+
+const closeMobileThread = () => {
+  mobileShowThread.value = false
 }
 
 // ── Poll for new messages ─────────────────────────────────────────────────
@@ -110,16 +116,31 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 pb-4" style="height: calc(100vh - 8rem); min-height: 400px;">
+  <div class="flex flex-col gap-3 pb-4" style="height: calc(100vh - 8rem); min-height: 400px;">
 
-    <h1 class="text-2xl font-bold text-white shrink-0">Messages</h1>
+    <!-- Header row -->
+    <div class="flex items-center gap-3 shrink-0">
+      <!-- Back button on mobile when thread is open -->
+      <button
+        v-if="mobileShowThread && activeUserId"
+        class="md:hidden flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white border border-white/10 hover:border-white/25 transition"
+        @click="closeMobileThread"
+      >
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        Back
+      </button>
+      <h1 class="text-2xl font-bold text-white">Messages</h1>
+    </div>
 
     <div class="flex gap-4 flex-1 overflow-hidden">
 
       <!-- ── Sidebar: conversations list ─────────────────────────────────── -->
-      <div class="w-64 shrink-0 flex flex-col rounded-2xl border border-white/8 overflow-hidden"
-           style="background: rgba(255,255,255,0.025);">
-
+      <!-- On mobile: hidden when a thread is open -->
+      <div
+        class="flex flex-col rounded-2xl border border-white/8 overflow-hidden"
+        :class="mobileShowThread ? 'hidden md:flex md:w-64 md:shrink-0' : 'flex w-full md:w-64 md:shrink-0'"
+        style="background: rgba(255,255,255,0.025);"
+      >
         <div class="px-4 py-3 border-b border-white/8 shrink-0">
           <p class="text-xs font-semibold text-white/40 uppercase tracking-wider">Reel Mate Chats</p>
         </div>
@@ -172,8 +193,12 @@ onUnmounted(() => {
       </div>
 
       <!-- ── Thread area ──────────────────────────────────────────────────── -->
-      <div class="flex-1 flex flex-col rounded-2xl border border-white/8 overflow-hidden"
-           style="background: rgba(255,255,255,0.02);">
+      <!-- On mobile: only shown when mobileShowThread is true -->
+      <div
+        class="flex-1 flex flex-col rounded-2xl border border-white/8 overflow-hidden"
+        :class="mobileShowThread ? 'flex' : 'hidden md:flex'"
+        style="background: rgba(255,255,255,0.02);"
+      >
 
         <!-- No conversation selected -->
         <div v-show="!activeUserId" class="flex-1 flex flex-col items-center justify-center gap-4 text-white/30">
@@ -220,7 +245,7 @@ onUnmounted(() => {
             >
               <div class="flex flex-col"
                    :style="msg.from_user_id === user?.id ? 'align-items: flex-end;' : 'align-items: flex-start;'">
-                <div class="max-w-xs px-4 py-2.5 text-sm"
+                <div class="max-w-[75vw] sm:max-w-xs px-4 py-2.5 text-sm"
                      :style="msg.from_user_id === user?.id
                        ? 'background: linear-gradient(135deg, #5b21b6, #7c3aed); color: white; border-radius: 18px 18px 4px 18px;'
                        : 'background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); border-radius: 18px 18px 18px 4px;'">

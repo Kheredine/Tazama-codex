@@ -163,6 +163,21 @@ export const initDb = async () => {
     )
   `)
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS watch_history (
+      id          SERIAL PRIMARY KEY,
+      user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      tmdb_id     TEXT    NOT NULL,
+      media_type  TEXT    NOT NULL,
+      title       TEXT,
+      poster_path TEXT,
+      season      INTEGER,
+      episode     INTEGER,
+      watched_at  BIGINT  NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
+      UNIQUE(user_id, tmdb_id, media_type)
+    )
+  `)
+
   console.log('✅ PostgreSQL database initialized')
 }
 
