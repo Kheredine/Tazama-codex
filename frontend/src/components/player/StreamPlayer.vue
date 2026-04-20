@@ -141,6 +141,7 @@ let loadTimer = null
 const onIframeLoad = () => {
   clearTimeout(loadTimer)
   iframeLoading.value = false
+  persistHistory()
 }
 const startLoadTimer = () => {
   clearTimeout(loadTimer)
@@ -231,7 +232,6 @@ watch(embedUrl, () => { startLoadTimer() })
 
 onMounted(() => {
   fetchTvDetails()
-  persistHistory()
   window.addEventListener('keydown', onKey)
   startLoadTimer()
 })

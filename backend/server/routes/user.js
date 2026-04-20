@@ -383,6 +383,59 @@ router.post('/update-watcher-level', verifyToken, async (req, res) => {
   }
 })
 
+// ── GET /api/user/watch-history ────────────────────────────────────────────
+router.get('/watch-history', verifyToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT tmdb_id as id, media_type as type, title, poster_path as poster,
+              season, episode, watched_at as "watchedAt"
+       FROM watch_history WHERE user_id = $1 ORDER BY watched_at DESC LIMIT 20`,
+      [req.user.id]
+    )
+    res.json({ history: rows.map(r => ({ ...r, watchedAt: Number(r.watchedAt) * 1000 })) })
+  } catch (err) {
+    console.error('Get watch history error:', err.message)
+    res.status(500).json({ error: 'Failed to fetch watch history' })
+  }
+})
+
+// ── POST /api/user/watch-history ───────────────────────────────────────────
+router.post('/watch-history', verifyToken, async (req, res) => {
+  try {
+    const { item } = req.body
+    if (!item?.id || !item?.type) return res.status(400).json({ error: 'Missing item' })
+    const userId = req.user.id
+
+    await pool.query(
+      `INSERT INTO watch_history (user_id, tmdb_id, media_type, title, poster_path, season, episode, watched_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, EXTRACT(EPOCH FROM NOW())::BIGINT)
+       ON CONFLICT (user_id, tmdb_id, media_type) DO UPDATE SET
+         title = EXCLUDED.title,
+         poster_path = EXCLUDED.poster_path,
+         season = EXCLUDED.season,
+         episode = EXCLUDED.episode,
+         watched_at = EXCLUDED.watched_at`,
+      [userId, String(item.id), item.type, item.title || '', item.poster || null, item.season || null, item.episode || null]
+    )
+
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('Save watch history error:', err.message)
+    res.status(500).json({ error: 'Failed to save watch history' })
+  }
+})
+
+// ── DELETE /api/user/watch-history ─────────────────────────────────────────
+router.delete('/watch-history', verifyToken, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM watch_history WHERE user_id = $1', [req.user.id])
+    res.json({ ok: true })
+  } catch (err) {
+    console.error('Clear watch history error:', err.message)
+    res.status(500).json({ error: 'Failed to clear watch history' })
+  }
+})
+
 // ── GET /api/user/watcher-title ────────────────────────────────────────────
 router.get('/watcher-title', verifyToken, async (req, res) => {
   try {
