@@ -13,6 +13,15 @@ const { getTopMoods, getMoodForHour, interactionCount } = useUserPreferences()
 const { t, lang } = useI18n()
 const { streamHistory } = useWatchHistory()
 
+const formatResumeTime = (seconds) => {
+  if (!seconds || seconds < 10) return null
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 const TMDB_KEY  = import.meta.env.VITE_TMDB_API_KEY
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 const IMG_BASE  = 'https://image.tmdb.org/t/p/w342'
@@ -257,9 +266,19 @@ onMounted(() => {
               </div>
             </div>
             <span v-if="item.type === 'tv' && item.episode" class="coming-date-badge">S{{ item.season }}E{{ item.episode }}</span>
+            <!-- Resume-time strip at bottom of poster -->
+            <div v-if="formatResumeTime(item.resumeTime)" class="absolute bottom-0 left-0 right-0 px-2 pb-1.5 pt-4" style="background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%);">
+              <div class="flex items-center gap-1 text-[10px] text-white/80 font-medium">
+                <i class="fa-solid fa-rotate-right text-purple-400 text-[9px]"></i>
+                <span>{{ formatResumeTime(item.resumeTime) }}</span>
+              </div>
+            </div>
           </div>
           <p class="card-title">{{ item.title }}</p>
-          <p v-if="item.watchedAt" class="card-year">{{ new Date(item.watchedAt).toLocaleDateString() }}</p>
+          <p v-if="formatResumeTime(item.resumeTime)" class="card-year" style="color: rgba(167,139,250,0.7);">
+            Resume from {{ formatResumeTime(item.resumeTime) }}
+          </p>
+          <p v-else-if="item.watchedAt" class="card-year">{{ new Date(item.watchedAt).toLocaleDateString() }}</p>
         </div>
       </div>
     </section>

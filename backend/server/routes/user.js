@@ -388,7 +388,7 @@ router.get('/watch-history', verifyToken, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT tmdb_id as id, media_type as type, title, poster_path as poster,
-              season, episode, watched_at as "watchedAt"
+              season, episode, resume_time as "resumeTime", watched_at as "watchedAt"
        FROM watch_history WHERE user_id = $1 ORDER BY watched_at DESC LIMIT 20`,
       [req.user.id]
     )
@@ -407,15 +407,16 @@ router.post('/watch-history', verifyToken, async (req, res) => {
     const userId = req.user.id
 
     await pool.query(
-      `INSERT INTO watch_history (user_id, tmdb_id, media_type, title, poster_path, season, episode, watched_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, EXTRACT(EPOCH FROM NOW())::BIGINT)
+      `INSERT INTO watch_history (user_id, tmdb_id, media_type, title, poster_path, season, episode, resume_time, watched_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, EXTRACT(EPOCH FROM NOW())::BIGINT)
        ON CONFLICT (user_id, tmdb_id, media_type) DO UPDATE SET
          title = EXCLUDED.title,
          poster_path = EXCLUDED.poster_path,
          season = EXCLUDED.season,
          episode = EXCLUDED.episode,
+         resume_time = EXCLUDED.resume_time,
          watched_at = EXCLUDED.watched_at`,
-      [userId, String(item.id), item.type, item.title || '', item.poster || null, item.season || null, item.episode || null]
+      [userId, String(item.id), item.type, item.title || '', item.poster || null, item.season || null, item.episode || null, item.resumeTime || 0]
     )
 
     res.json({ ok: true })

@@ -173,9 +173,14 @@ export const initDb = async () => {
       poster_path TEXT,
       season      INTEGER,
       episode     INTEGER,
+      resume_time INTEGER NOT NULL DEFAULT 0,
       watched_at  BIGINT  NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::BIGINT,
       UNIQUE(user_id, tmdb_id, media_type)
     )
+  `)
+
+  await pool.query(`
+    ALTER TABLE watch_history ADD COLUMN IF NOT EXISTS resume_time INTEGER NOT NULL DEFAULT 0
   `)
 
   console.log('✅ PostgreSQL database initialized')

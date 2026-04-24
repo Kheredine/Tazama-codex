@@ -17,9 +17,34 @@ const loading  = ref(true)
 const fetchSimilar = async () => {
   loading.value = true
   try {
-    const res  = await fetch(`https://api.themoviedb.org/3/${props.type}/${props.id}/similar?api_key=${TMDB_KEY}&page=1`)
-    const data = await res.json()
-    similar.value = (data.results || []).filter(item => item.poster_path).slice(0, 18)
+    // Fetch TMDB recommendations (ML-powered, genre/mood aware) and show details in parallel
+    const [recRes, detailRes] = await Promise.all([
+      fetch(`https://api.themoviedb.org/3/${props.type}/${props.id}/recommendations?api_key=${TMDB_KEY}&page=1`),
+      fetch(`https://api.themoviedb.org/3/${props.type}/${props.id}?api_key=${TMDB_KEY}`),
+    ])
+    const [recData, detailData] = await Promise.all([recRes.json(), detailRes.json()])
+
+    let results = (recData.results || []).filter(item => item.poster_path)
+
+    // If recommendations are sparse, supplement with genre + keyword discovery
+    if (results.length < 8 && detailData.genres?.length) {
+      const genreIds = detailData.genres.map(g => g.id).join(',')
+      const discoverRes = await fetch(
+        `https://api.themoviedb.org/3/discover/${props.type}?api_key=${TMDB_KEY}` +
+        `&with_genres=${genreIds}&sort_by=vote_average.desc&vote_count.gte=100&page=1`
+      )
+      const discoverData = await discoverRes.json()
+      const seen = new Set(results.map(r => r.id))
+      seen.add(Number(props.id))
+      for (const item of (discoverData.results || [])) {
+        if (item.poster_path && !seen.has(item.id)) {
+          results.push(item)
+          seen.add(item.id)
+        }
+      }
+    }
+
+    similar.value = results.slice(0, 18)
   } catch {
     similar.value = []
   } finally {
@@ -42,7 +67,7 @@ watch(() => props.id, fetchSimilar)
 <template>
   <div>
     <h2 class="text-xs uppercase tracking-widest text-white/40 mb-4 font-medium">
-      Similar {{ type === 'movie' ? 'Movies' : type === 'tv' ? 'Series' : 'Titles' }}
+      More Like This
     </h2>
 
     <!-- Loading skeletons -->
