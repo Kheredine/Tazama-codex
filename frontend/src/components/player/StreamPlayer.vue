@@ -7,10 +7,13 @@ import {
 import { useWatchHistory } from '@/composables/useWatchHistory'
 
 const props = defineProps({
-  type:   { type: String, required: true },
-  id:     { type: [String, Number], required: true },
-  title:  { type: String, default: '' },
-  poster: { type: String, default: '' },
+  type:          { type: String, required: true },
+  id:            { type: [String, Number], required: true },
+  title:         { type: String, default: '' },
+  poster:        { type: String, default: '' },
+  resumeSeason:  { type: Number, default: null },
+  resumeEpisode: { type: Number, default: null },
+  resumeTime:    { type: Number, default: 0 },
 })
 
 const TMDB_KEY = import.meta.env.VITE_TMDB_API_KEY
@@ -28,12 +31,24 @@ const openCats = ref(Object.fromEntries(PROVIDER_CATEGORIES.map(c => [c.id, true
 const toggleCat = (id) => { openCats.value[id] = !openCats.value[id] }
 
 // ── iframe state ───────────────────────────────────────────────────────────────
-const iframeLoading = ref(true)
-const iframeError   = ref(false)
-const iframeKey     = ref(0)
-const isFullscreen  = ref(false)
-const shareToast    = ref(false)
-const fallbackToast = ref(false)
+const iframeLoading      = ref(true)
+const iframeError        = ref(false)
+const iframeKey          = ref(0)
+const isFullscreen       = ref(false)
+const shareToast         = ref(false)
+const fallbackToast      = ref(false)
+const showResumeOverlay  = ref(false)
+
+const formatResumeTime = (s) => {
+  if (!s || s < 10) return null
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  return `${m}:${String(sec).padStart(2, '0')}`
+}
+
+let resumeOverlayTimer = null
 
 // ── Fullscreen (native API) ────────────────────────────────────────────────────
 // We fullscreen only the video wrapper div so header/UI stays outside.
@@ -55,8 +70,8 @@ const onFullscreenChange = () => {
 }
 
 // ── TV state ───────────────────────────────────────────────────────────────────
-const season          = ref(1)
-const episode         = ref(1)
+const season          = ref(props.resumeSeason  || 1)
+const episode         = ref(props.resumeEpisode || 1)
 const tvSeasons       = ref([])
 const episodes        = ref([])
 const episodesLoading = ref(false)
@@ -103,7 +118,7 @@ const fetchTvDetails = async () => {
     const res  = await fetch(`https://api.themoviedb.org/3/tv/${props.id}?api_key=${TMDB_KEY}`)
     const data = await res.json()
     tvSeasons.value = (data.seasons || []).filter(s => s.season_number > 0)
-    await fetchEpisodes(1)
+    await fetchEpisodes(season.value)
   } catch { /* fail silently */ }
 }
 
@@ -153,8 +168,8 @@ const toggleAutoFallback = () => {
 // The player is a cross-origin iframe so we can't read video.currentTime.
 // We measure wall-clock seconds while the tab is visible and the iframe is
 // loaded, then store that as the resume offset.
-const trackingStart = ref(null) // Date.now() of the current segment
-const trackingAcc   = ref(0)    // seconds accumulated from past segments
+const trackingStart = ref(null)              // Date.now() of the current segment
+const trackingAcc   = ref(props.resumeTime)  // seed from saved position so elapsed continues correctly
 
 const getElapsedSeconds = () => {
   let s = trackingAcc.value
@@ -193,6 +208,8 @@ const startAutosave = () => {
 // ── iframe lifecycle ───────────────────────────────────────────────────────────
 const reloadIframe = () => {
   resetTracking()
+  clearTimeout(resumeOverlayTimer)
+  showResumeOverlay.value = false
   iframeLoading.value = true
   iframeError.value   = false
   iframeKey.value++
@@ -202,6 +219,10 @@ let loadTimer = null
 const onIframeLoad = () => {
   clearTimeout(loadTimer)
   iframeLoading.value = false
+  if (props.resumeTime > 10 && !showResumeOverlay.value) {
+    showResumeOverlay.value = true
+    resumeOverlayTimer = setTimeout(() => { showResumeOverlay.value = false }, 9000)
+  }
   startTracking()
   startAutosave()
   persistHistory()
@@ -312,6 +333,7 @@ onUnmounted(() => {
     ;(document.exitFullscreen || document.webkitExitFullscreen)?.call(document)
   }
   clearTimeout(loadTimer)
+  clearTimeout(resumeOverlayTimer)
   clearInterval(autosaveTimer)
   pauseTracking()
   persistHistory()
@@ -517,6 +539,24 @@ onUnmounted(() => {
         @load="onIframeLoad"
         @error="onIframeError"
       ></iframe>
+
+      <!-- Resume-position overlay -->
+      <Transition name="fade">
+        <div
+          v-if="showResumeOverlay && formatResumeTime(props.resumeTime)"
+          class="absolute bottom-4 left-4 z-20 flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/10 text-sm text-white/90 select-none"
+          style="background: rgba(10,6,21,0.88); backdrop-filter: blur(8px);"
+        >
+          <i class="fa-solid fa-rotate-right text-purple-400 text-xs shrink-0"></i>
+          <span>Last watched at <strong class="text-white">{{ formatResumeTime(props.resumeTime) }}</strong> — seek to resume</span>
+          <button
+            class="ml-1 shrink-0 text-white/35 hover:text-white/80 transition"
+            @click="showResumeOverlay = false"
+          >
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+      </Transition>
     </div>
 
     <!-- ── "Not loading?" helper bar ──────────────────────────────────────────── -->
