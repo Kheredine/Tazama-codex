@@ -130,8 +130,50 @@ const toggleAutoFallback = () => {
   localStorage.setItem('tazama_auto_fallback', String(autoFallback.value))
 }
 
+// ── Elapsed watch-time tracking ────────────────────────────────────────────────
+// The player is a cross-origin iframe so we can't read video.currentTime.
+// We measure wall-clock seconds while the tab is visible and the iframe is
+// loaded, then store that as the resume offset.
+const trackingStart = ref(null) // Date.now() of the current segment
+const trackingAcc   = ref(0)    // seconds accumulated from past segments
+
+const getElapsedSeconds = () => {
+  let s = trackingAcc.value
+  if (trackingStart.value) s += Math.floor((Date.now() - trackingStart.value) / 1000)
+  return s
+}
+const startTracking = () => {
+  if (!trackingStart.value) trackingStart.value = Date.now()
+}
+const pauseTracking = () => {
+  if (!trackingStart.value) return
+  trackingAcc.value += Math.floor((Date.now() - trackingStart.value) / 1000)
+  trackingStart.value = null
+}
+const resetTracking = () => {
+  trackingStart.value = null
+  trackingAcc.value   = 0
+}
+const onVisibilityChange = () => {
+  if (document.visibilityState === 'hidden') {
+    pauseTracking()
+    persistHistory()
+  } else if (!iframeLoading.value && !iframeError.value) {
+    startTracking()
+  }
+}
+
+let autosaveTimer = null
+const startAutosave = () => {
+  clearInterval(autosaveTimer)
+  autosaveTimer = setInterval(() => {
+    if (!iframeLoading.value && !iframeError.value) persistHistory()
+  }, 30_000)
+}
+
 // ── iframe lifecycle ───────────────────────────────────────────────────────────
 const reloadIframe = () => {
+  resetTracking()
   iframeLoading.value = true
   iframeError.value   = false
   iframeKey.value++
@@ -141,6 +183,8 @@ let loadTimer = null
 const onIframeLoad = () => {
   clearTimeout(loadTimer)
   iframeLoading.value = false
+  startTracking()
+  startAutosave()
   persistHistory()
 }
 const startLoadTimer = () => {
@@ -210,6 +254,7 @@ const persistHistory = () => {
     season:      season.value,
     episode:     episode.value,
     serverIndex: serverIndex.value,
+    resumeTime:  getElapsedSeconds(),
   })
 }
 
@@ -233,12 +278,17 @@ watch(embedUrl, () => { startLoadTimer() })
 onMounted(() => {
   fetchTvDetails()
   window.addEventListener('keydown', onKey)
+  document.addEventListener('visibilitychange', onVisibilityChange)
   startLoadTimer()
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   clearTimeout(loadTimer)
+  clearInterval(autosaveTimer)
+  pauseTracking()
+  persistHistory()
 })
 </script>
 
