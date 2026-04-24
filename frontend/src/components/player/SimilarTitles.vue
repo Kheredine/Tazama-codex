@@ -52,8 +52,13 @@ const fetchSimilar = async () => {
   }
 }
 
-const goDetail = (item) => {
-  router.push({ name: 'detail', params: { type: props.type, id: item.id } })
+const goDetail = (item, event = null) => {
+  const route = router.resolve({ name: 'detail', params: { type: props.type, id: item.id } })
+  if (event?.ctrlKey || event?.metaKey) {
+    window.open(route.href, '_blank')
+  } else {
+    router.push(route)
+  }
 }
 
 const titleOf  = (item) => item.title || item.name || ''
@@ -91,7 +96,7 @@ watch(() => props.id, fetchSimilar)
         v-for="item in similar"
         :key="item.id"
         class="shrink-0 w-32 group cursor-pointer"
-        @click="goDetail(item)"
+        @click="goDetail(item, $event)"
       >
         <div class="relative w-full aspect-[2/3] rounded-xl overflow-hidden bg-white/5 mb-2">
           <img

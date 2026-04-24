@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOracleState } from '@/composables/useOracleState'
 import { useUserLibrary } from '@/composables/useUserLibrary'
+import { useGoDetail } from '@/composables/useGoDetail'
 import { useUserPreferences } from '@/composables/useUserPreferences'
 import { useI18n } from '@/composables/useI18n'
 import { apiUrl } from '@/config/api'
@@ -113,9 +114,7 @@ const handleDislike = (rec) => {
   removeRecommendation(makeItem(rec))
 }
 
-const goDetail = (rec) => {
-  router.push({ name: 'detail', params: { type: rec.type, id: rec.id } })
-}
+const { goDetail } = useGoDetail()
 
 onMounted(() => {
   if (recommendations.value.length === 0) fetchRecommendations()
@@ -152,7 +151,7 @@ onMounted(() => {
           :key="`${rec.type}-${rec.id}`"
           class="rec-card group flex flex-col rounded-2xl overflow-hidden cursor-pointer border transition duration-300"
           style="background: rgba(124,58,237,0.07); border-color: rgba(124,58,237,0.18);"
-          @click="goDetail(rec)"
+          @click="goDetail(rec, $event)"
         >
           <!-- Poster -->
           <div class="relative w-full h-64 shrink-0 overflow-hidden" style="background:#12121A">

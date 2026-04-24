@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserLibrary } from '@/composables/useUserLibrary'
 import { useUserPreferences } from '@/composables/useUserPreferences'
+import { useGoDetail } from '@/composables/useGoDetail'
 import { useI18n } from '@/composables/useI18n'
 import { useWatchHistory } from '@/composables/useWatchHistory'
 import { apiUrl } from '@/config/api'
@@ -167,11 +168,7 @@ const fetchPersonalized = async () => {
 }
 
 // ── Navigation ─────────────────────────────────────────────────────────
-const goDetail = (item) => {
-  const rawType  = item.media_type || item.type || 'movie'
-  const normType = rawType === 'movie' ? 'movie' : 'tv'
-  router.push({ name: 'detail', params: { type: normType, id: item.id } })
-}
+const { goDetail } = useGoDetail()
 
 const posterUrl = (item) =>
   item.poster_path ? `${IMG_BASE}${item.poster_path}` : (item.poster || null)
@@ -231,7 +228,7 @@ onMounted(() => {
             v-for="item in personalized"
             :key="`p-${item.id}`"
             class="scroll-card"
-            @click="goDetail(item)"
+            @click="goDetail(item, $event)"
           >
             <div class="poster-wrap">
               <img v-if="item.poster" :src="item.poster" :alt="item.title" class="poster-img" />
@@ -254,7 +251,7 @@ onMounted(() => {
           v-for="item in streamHistory"
           :key="`rw-${item.type}-${item.id}`"
           class="scroll-card"
-          @click="router.push({ name: 'detail', params: { type: item.type, id: item.id } })"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="item.poster" :src="item.poster" :alt="item.title" class="poster-img" />
@@ -291,7 +288,7 @@ onMounted(() => {
           v-for="(item, i) in trending"
           :key="`tr-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -313,7 +310,7 @@ onMounted(() => {
           v-for="item in comingSoon"
           :key="`cs-${item._type}-${item.id}`"
           class="scroll-card"
-          @click="goDetail({ ...item, media_type: item._type })"
+          @click="goDetail({ ...item, media_type: item._type }, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -335,7 +332,7 @@ onMounted(() => {
           v-for="(item, i) in films"
           :key="`f-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -357,7 +354,7 @@ onMounted(() => {
           v-for="(item, i) in series"
           :key="`s-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -379,7 +376,7 @@ onMounted(() => {
           v-for="(item, i) in anime"
           :key="`a-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -401,7 +398,7 @@ onMounted(() => {
           v-for="(item, i) in tvShows"
           :key="`tv-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />
@@ -423,7 +420,7 @@ onMounted(() => {
           v-for="(item, i) in docs"
           :key="`d-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="posterUrl(item)" :src="posterUrl(item)" :alt="itemTitle(item)" class="poster-img" />

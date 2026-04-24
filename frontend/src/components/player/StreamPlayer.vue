@@ -493,7 +493,6 @@ onUnmounted(() => {
         allowfullscreen
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
         referrerpolicy="origin"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
         @load="onIframeLoad"
         @error="onIframeError"
       ></iframe>

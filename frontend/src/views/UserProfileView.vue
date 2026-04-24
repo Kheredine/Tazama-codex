@@ -3,6 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useI18n } from '@/composables/useI18n'
+import { useGoDetail } from '@/composables/useGoDetail'
 
 const route = useRoute()
 const router = useRouter()
@@ -112,9 +113,7 @@ const disconnect = async () => {
   }
 }
 
-const goToDetail = (item) => {
-  router.push({ name: 'detail', params: { type: item.type, id: item.id } })
-}
+const { goDetail: goToDetail } = useGoDetail()
 </script>
 
 <template>
@@ -292,7 +291,7 @@ const goToDetail = (item) => {
             v-for="item in (profile.liked || []).slice(0, 10)"
             :key="`liked-${item.id}`"
             class="cursor-pointer rounded-xl overflow-hidden border border-white/8 hover:border-purple-500/40 transition"
-            @click="goToDetail(item)"
+            @click="goToDetail(item, $event)"
           >
             <img v-show="item.poster" :src="`${IMG_BASE}${(item.poster || '').replace(/^.*\/p\/w\d+/,'')}`" :alt="item.title" class="w-full aspect-[2/3] object-cover" />
             <div v-show="!item.poster" class="w-full aspect-[2/3] bg-white/5 flex items-center justify-center">
@@ -316,7 +315,7 @@ const goToDetail = (item) => {
             v-for="item in (profile.watchlist || []).slice(0, 10)"
             :key="`wl-${item.id}`"
             class="cursor-pointer rounded-xl overflow-hidden border border-white/8 hover:border-blue-500/40 transition"
-            @click="goToDetail(item)"
+            @click="goToDetail(item, $event)"
           >
             <img v-show="item.poster" :src="`${IMG_BASE}${(item.poster || '').replace(/^.*\/p\/w\d+/,'')}`" :alt="item.title" class="w-full aspect-[2/3] object-cover" />
             <div v-show="!item.poster" class="w-full aspect-[2/3] bg-white/5 flex items-center justify-center">
@@ -340,7 +339,7 @@ const goToDetail = (item) => {
             v-for="item in (profile.watched || []).slice(0, 10)"
             :key="`wd-${item.id}`"
             class="cursor-pointer rounded-xl overflow-hidden border border-white/8 hover:border-green-500/40 transition"
-            @click="goToDetail(item)"
+            @click="goToDetail(item, $event)"
           >
             <img v-show="item.poster" :src="`${IMG_BASE}${(item.poster || '').replace(/^.*\/p\/w\d+/,'')}`" :alt="item.title" class="w-full aspect-[2/3] object-cover" />
             <div v-show="!item.poster" class="w-full aspect-[2/3] bg-white/5 flex items-center justify-center">
