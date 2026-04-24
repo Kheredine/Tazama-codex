@@ -45,6 +45,11 @@ const newPlaylist = ref({
 const type = route.params.type   // 'movie' | 'tv'
 const id   = route.params.id
 
+// Resume params — set when navigating from Recently Watched
+const resumeSeason  = route.query.season  ? Number(route.query.season)  : null
+const resumeEpisode = route.query.episode ? Number(route.query.episode) : null
+const resumeTime    = route.query.t       ? Number(route.query.t)       : 0
+
 // Direct platform URLs by TMDB provider_id
 const PLATFORM_URLS = {
   8:   (t) => `https://www.netflix.com/search?q=${encodeURIComponent(t)}`,
@@ -459,7 +464,12 @@ const saveToPlaylist = async (playlist) => {
             Trailer
           </button>
         </div>
-        <StreamPlayer :type="type" :id="id" :title="title" :poster="poster" />
+        <StreamPlayer
+          :type="type" :id="id" :title="title" :poster="poster"
+          :resume-season="resumeSeason"
+          :resume-episode="resumeEpisode"
+          :resume-time="resumeTime"
+        />
       </div>
 
       <!-- ── Similar Titles ─────────────────────────────────────────────────── -->

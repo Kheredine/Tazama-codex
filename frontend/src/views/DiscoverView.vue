@@ -170,6 +170,17 @@ const fetchPersonalized = async () => {
 // ── Navigation ─────────────────────────────────────────────────────────
 const { goDetail } = useGoDetail()
 
+// Recently Watched cards carry resume info — pass it as query params
+const goResume = (item, event = null) => {
+  const query = {}
+  if (item.season)               query.season  = item.season
+  if (item.episode)              query.episode = item.episode
+  if (item.resumeTime > 10)      query.t       = item.resumeTime
+  const resolved = router.resolve({ name: 'detail', params: { type: item.type, id: item.id }, query })
+  if (event?.ctrlKey || event?.metaKey) window.open(resolved.href, '_blank')
+  else router.push(resolved)
+}
+
 const posterUrl = (item) =>
   item.poster_path ? `${IMG_BASE}${item.poster_path}` : (item.poster || null)
 
@@ -251,7 +262,7 @@ onMounted(() => {
           v-for="item in streamHistory"
           :key="`rw-${item.type}-${item.id}`"
           class="scroll-card"
-          @click="goDetail(item, $event)"
+          @click="goResume(item, $event)"
         >
           <div class="poster-wrap">
             <img v-if="item.poster" :src="item.poster" :alt="item.title" class="poster-img" />
