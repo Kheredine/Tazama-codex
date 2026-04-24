@@ -35,6 +35,25 @@ const isFullscreen  = ref(false)
 const shareToast    = ref(false)
 const fallbackToast = ref(false)
 
+// ── Fullscreen (native API) ────────────────────────────────────────────────────
+// We fullscreen only the video wrapper div so header/UI stays outside.
+const videoWrap = ref(null)
+
+const toggleFullscreen = () => {
+  const fsEl = document.fullscreenElement || document.webkitFullscreenElement
+  if (fsEl) {
+    ;(document.exitFullscreen || document.webkitExitFullscreen).call(document)
+  } else {
+    const el = videoWrap.value
+    if (!el) return
+    ;(el.requestFullscreen || el.webkitRequestFullscreen).call(el)
+  }
+}
+
+const onFullscreenChange = () => {
+  isFullscreen.value = !!(document.fullscreenElement || document.webkitFullscreenElement)
+}
+
 // ── TV state ───────────────────────────────────────────────────────────────────
 const season          = ref(1)
 const episode         = ref(1)
@@ -279,12 +298,19 @@ onMounted(() => {
   fetchTvDetails()
   window.addEventListener('keydown', onKey)
   document.addEventListener('visibilitychange', onVisibilityChange)
+  document.addEventListener('fullscreenchange', onFullscreenChange)
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange)
   startLoadTimer()
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKey)
   document.removeEventListener('visibilitychange', onVisibilityChange)
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+  document.removeEventListener('webkitfullscreenchange', onFullscreenChange)
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    ;(document.exitFullscreen || document.webkitExitFullscreen)?.call(document)
+  }
   clearTimeout(loadTimer)
   clearInterval(autosaveTimer)
   pauseTracking()
@@ -293,12 +319,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    class="stream-player overflow-hidden rounded-2xl"
-    :class="isFullscreen
-      ? 'fixed inset-0 z-50 rounded-none border-0 bg-black'
-      : 'border border-[#7c3aed]/20 shadow-player'"
-  >
+  <div class="stream-player overflow-hidden rounded-2xl border border-[#7c3aed]/20 shadow-player">
 
     <!-- ── Player Header ─────────────────────────────────────────────────────── -->
     <div class="player-header flex items-center gap-2 px-4 py-3 border-b border-white/8">
@@ -331,7 +352,7 @@ onUnmounted(() => {
         <!-- Fullscreen -->
         <button
           class="icon-btn"
-          @click="isFullscreen = !isFullscreen"
+          @click="toggleFullscreen"
           :title="isFullscreen ? 'Exit fullscreen' : 'Fullscreen'"
         >
           <i :class="isFullscreen ? 'fa-solid fa-compress' : 'fa-solid fa-expand'" class="text-[10px]"></i>
@@ -451,7 +472,7 @@ onUnmounted(() => {
     </Transition>
 
     <!-- ── iframe Area ───────────────────────────────────────────────────────── -->
-    <div class="relative w-full bg-black" style="padding-top: 56.25%">
+    <div ref="videoWrap" class="video-wrap relative w-full bg-black" style="padding-top: 56.25%">
 
       <!-- Loading overlay -->
       <Transition name="fade">
@@ -799,4 +820,13 @@ onUnmounted(() => {
 
 .toast-enter-active, .toast-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
+
+/* ── Native fullscreen: video wrapper fills the entire screen ─────────────── */
+.video-wrap:fullscreen,
+.video-wrap:-webkit-full-screen {
+  padding-top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: #000 !important;
+}
 </style>
