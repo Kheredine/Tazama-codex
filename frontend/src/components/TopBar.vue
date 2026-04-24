@@ -110,9 +110,14 @@ onUnmounted(() => {
 watch(() => route.path, closeSearch)
 
 // ── Result navigation ─────────────────────────────────────────────────────────
-const goToTitle = (item) => {
+const goToTitle = (item, event = null) => {
   closeSearch()
-  router.push({ name: 'detail', params: { type: item.type, id: item.id } })
+  const route = router.resolve({ name: 'detail', params: { type: item.type, id: item.id } })
+  if (event?.ctrlKey || event?.metaKey) {
+    window.open(route.href, '_blank')
+  } else {
+    router.push(route)
+  }
 }
 const goToUser = (u) => {
   closeSearch()
@@ -248,7 +253,7 @@ onUnmounted(() => clearInterval(unreadTimer))
             :key="`m-${item.type}-${item.id}`"
             type="button"
             class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition text-left"
-            @click.stop="goToTitle(item)"
+            @click.stop="goToTitle(item, $event)"
           >
             <div class="w-9 h-13 rounded-lg overflow-hidden shrink-0 bg-white/5 flex items-center justify-center">
               <img v-if="item.poster" :src="item.poster" :alt="item.title" class="w-full h-full object-cover" />

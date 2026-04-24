@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserLibrary } from '@/composables/useUserLibrary'
 import { useI18n } from '@/composables/useI18n'
+import { useGoDetail } from '@/composables/useGoDetail'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
@@ -37,9 +38,7 @@ const countFor = (tabId) => {
   return 0
 }
 
-const goDetail = (item) => {
-  router.push({ name: 'detail', params: { type: item.type, id: item.id } })
-}
+const { goDetail } = useGoDetail()
 
 // Import streaming history
 const showImport = ref(false)
@@ -321,7 +320,7 @@ const onTabChange = (tabId) => {
           v-for="item in currentList"
           :key="`${item.type}-${item.id}`"
           class="group relative flex flex-col rounded-xl overflow-hidden cursor-pointer bg-white/5 border border-white/10 hover:border-purple-500/40 transition"
-          @click="goDetail(item)"
+          @click="goDetail(item, $event)"
         >
           <div class="relative w-full h-48 overflow-hidden bg-[#12121A]">
             <img v-if="item.poster" :src="item.poster" :alt="item.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
@@ -464,7 +463,7 @@ const onTabChange = (tabId) => {
                 v-for="item in expandedPlaylist?.items"
                 :key="`${item.tmdb_id}-${item.media_type}`"
                 class="relative group cursor-pointer rounded-lg overflow-hidden"
-                @click="router.push({ name: 'detail', params: { type: item.media_type, id: item.tmdb_id } })"
+                @click="goDetail(item, $event)"
               >
                 <div class="w-full aspect-[2/3] bg-white/5 rounded-lg overflow-hidden">
                   <img v-if="item.poster_path"
