@@ -19,6 +19,7 @@ export const PROVIDER_CATEGORIES = [
   { id: 'lynx',   label: 'Lynx CDN',       icon: 'fa-bolt',           description: 'CDN-hosted stream providers' },
   { id: 'direct', label: 'Direct Stream',  icon: 'fa-circle-play',    description: 'Direct video CDN hosts' },
   { id: 'multi',  label: 'Multi-Source',   icon: 'fa-layer-group',    description: 'Aggregators across CDN providers' },
+  { id: 'anime',  label: 'French & Anime', icon: 'fa-language',       description: 'VOSTFR / VF — French subtitles & dubs' },
 ]
 
 // ── Provider factory (adapter) ─────────────────────────────────────────────────
@@ -257,6 +258,95 @@ export const MULTI_SERVERS = [
   }),
 ]
 
+// ── French & Anime Providers ───────────────────────────────────────────────────
+// VOSTFR = original audio + French subtitles (forced via lang param).
+// VF     = French dub track when available from the provider.
+// Coverage varies by title — try multiple servers if one has no French track.
+export const ANIME_FR_SERVERS = [
+
+  // ── VOSTFR ──────────────────────────────────────────────────────────────────
+  mkProvider({
+    id: 'vidsrc-to-vostfr',  name: 'VidSrc.to VOSTFR',   category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'ds_lang',
+    movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
+    tv:    (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'vidsrc-me-vostfr',  name: 'VidSrc.me VOSTFR',   category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'sub_lang',
+    movie: (id) => `https://vidsrc.me/embed/movie?tmdb=${id}`,
+    tv:    (id, s, e) => `https://vidsrc.me/embed/tv?tmdb=${id}&season=${s}&episode=${e}`,
+  }),
+  mkProvider({
+    id: 'vidlink-vostfr',    name: 'VidLink VOSTFR',      category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'lang',
+    movie: (id) => `https://vidlink.pro/movie/${id}`,
+    tv:    (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'superembed-vostfr', name: 'SuperEmbed VOSTFR',   category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'lang',
+    movie: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+    tv:    (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
+  }),
+  mkProvider({
+    id: 'vidsrc-cc-vostfr',  name: 'VidSrc CC VOSTFR',   category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'lang',
+    movie: (id) => `https://vidsrc.cc/v2/embed/movie/${id}`,
+    tv:    (id, s, e) => `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'vidsrc-xyz-vostfr', name: 'VidSrc XYZ VOSTFR',  category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR, subParam: 'lang',
+    movie: (id) => `https://vidsrc.xyz/embed/movie/${id}`,
+    tv:    (id, s, e) => `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'autoembed-vostfr',  name: 'AutoEmbed VOSTFR',    category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR,
+    movie: (id) => `https://autoembed.co/movie/tmdb/${id}?lang=fr`,
+    tv:    (id, s, e) => `https://autoembed.co/tv/tmdb/${id}-${s}-${e}?lang=fr`,
+  }),
+  mkProvider({
+    id: 'embedsu-vostfr',    name: 'Embed.su VOSTFR',     category: 'anime',
+    audioMode: AUDIO_MODES.VOSTFR,
+    movie: (id) => `https://embed.su/embed/movie/${id}?lang=fr`,
+    tv:    (id, s, e) => `https://embed.su/embed/tv/${id}/${s}/${e}?lang=fr`,
+  }),
+
+  // ── VF (French dub) ─────────────────────────────────────────────────────────
+  mkProvider({
+    id: 'vidsrc-pro-vf',     name: 'VidSrc Pro VF',       category: 'anime',
+    audioMode: AUDIO_MODES.VF, subParam: 'lang',
+    movie: (id) => `https://vidsrc.pro/embed/movie/${id}`,
+    tv:    (id, s, e) => `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'vidsrc-to-vf',      name: 'VidSrc.to VF',        category: 'anime',
+    audioMode: AUDIO_MODES.VF, subParam: 'ds_lang',
+    movie: (id) => `https://vidsrc.to/embed/movie/${id}`,
+    tv:    (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'vidlink-vf',        name: 'VidLink VF',           category: 'anime',
+    audioMode: AUDIO_MODES.VF, subParam: 'lang',
+    movie: (id) => `https://vidlink.pro/movie/${id}`,
+    tv:    (id, s, e) => `https://vidlink.pro/tv/${id}/${s}/${e}`,
+  }),
+  mkProvider({
+    id: 'superembed-vf',     name: 'SuperEmbed VF',        category: 'anime',
+    audioMode: AUDIO_MODES.VF, subParam: 'lang',
+    movie: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+    tv:    (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
+  }),
+  mkProvider({
+    id: 'autoembed-vf',      name: 'AutoEmbed VF',         category: 'anime',
+    audioMode: AUDIO_MODES.VF,
+    movie: (id) => `https://autoembed.co/movie/tmdb/${id}?lang=fr&dubbed=true`,
+    tv:    (id, s, e) => `https://autoembed.co/tv/tmdb/${id}-${s}-${e}?lang=fr&dubbed=true`,
+  }),
+]
+
 // ── Aggregated exports ─────────────────────────────────────────────────────────
 export const ALL_SERVERS = [
   ...VIDSRC_SERVERS,
@@ -264,6 +354,7 @@ export const ALL_SERVERS = [
   ...LYNX_SERVERS,
   ...DIRECT_SERVERS,
   ...MULTI_SERVERS,
+  ...ANIME_FR_SERVERS,
 ]
 
 // Backward-compatible aliases
