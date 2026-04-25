@@ -308,6 +308,7 @@ const onKey = (e) => {
   if (e.key === 'ArrowLeft'  && props.type === 'tv') { prevEpisode(); e.preventDefault() }
   if (e.key === 'ArrowRight' && props.type === 'tv') { nextEpisode(); e.preventDefault() }
   if (e.key === 's' || e.key === 'S') showServerPanel.value = !showServerPanel.value
+  if (e.key === 'f' || e.key === 'F') { toggleFullscreen(); e.preventDefault() }
 }
 
 // ── Watchers & lifecycle ───────────────────────────────────────────────────────
@@ -561,6 +562,16 @@ onUnmounted(() => {
           </button>
         </div>
       </Transition>
+
+      <!-- Fullscreen overlay button (always reachable above the iframe) -->
+      <button
+        v-if="!iframeLoading && !iframeError"
+        class="video-fs-btn absolute bottom-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+        @click.stop="toggleFullscreen"
+        :title="isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'"
+      >
+        <i :class="isFullscreen ? 'fa-solid fa-compress' : 'fa-solid fa-expand'" class="text-white text-sm"></i>
+      </button>
     </div>
 
     <!-- ── "Not loading?" helper bar ──────────────────────────────────────────── -->
@@ -864,6 +875,19 @@ onUnmounted(() => {
 
 .toast-enter-active, .toast-leave-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(12px); }
+
+/* ── Fullscreen overlay button ───────────────────────────────────────────── */
+.video-fs-btn {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.55;
+  backdrop-filter: blur(4px);
+}
+.video-fs-btn:hover {
+  opacity: 1;
+  background: rgba(124, 58, 237, 0.55);
+  border-color: rgba(124, 58, 237, 0.6);
+}
 
 /* ── Native fullscreen: video wrapper fills the entire screen ─────────────── */
 .video-wrap:fullscreen,
