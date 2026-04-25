@@ -26,8 +26,11 @@ const audioFilter    = ref(localStorage.getItem('tazama_audio_filter') || 'all')
 const autoFallback   = ref(localStorage.getItem('tazama_auto_fallback') !== 'false')
 const showServerPanel = ref(false)
 
-// ── Collapsible category state (all open by default) ──────────────────────────
-const openCats = ref(Object.fromEntries(PROVIDER_CATEGORIES.map(c => [c.id, true])))
+// ── Collapsible category state ────────────────────────────────────────────────
+const COLLAPSED_BY_DEFAULT = new Set(['lynx', 'direct', 'multi'])
+const openCats = ref(Object.fromEntries(
+  PROVIDER_CATEGORIES.map(c => [c.id, !COLLAPSED_BY_DEFAULT.has(c.id)])
+))
 const toggleCat = (id) => { openCats.value[id] = !openCats.value[id] }
 
 // ── iframe state ───────────────────────────────────────────────────────────────
