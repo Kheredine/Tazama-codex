@@ -14,12 +14,12 @@ export const AUDIO_MODES = {
 
 // ── Provider categories ────────────────────────────────────────────────────────
 export const PROVIDER_CATEGORIES = [
+  { id: 'anime',  label: 'French & Anime', icon: 'fa-language',       description: 'VOSTFR / VF — French subtitles & dubs' },
   { id: 'vidsrc', label: 'VidSrc',         icon: 'fa-shield-halved',  description: 'Reliable multi-source embeds' },
   { id: 'embed',  label: 'Embed Services', icon: 'fa-code',           description: 'General-purpose embed players' },
   { id: 'lynx',   label: 'Lynx CDN',       icon: 'fa-bolt',           description: 'CDN-hosted stream providers' },
   { id: 'direct', label: 'Direct Stream',  icon: 'fa-circle-play',    description: 'Direct video CDN hosts' },
   { id: 'multi',  label: 'Multi-Source',   icon: 'fa-layer-group',    description: 'Aggregators across CDN providers' },
-  { id: 'anime',  label: 'French & Anime', icon: 'fa-language',       description: 'VOSTFR / VF — French subtitles & dubs' },
 ]
 
 // ── Provider factory (adapter) ─────────────────────────────────────────────────
