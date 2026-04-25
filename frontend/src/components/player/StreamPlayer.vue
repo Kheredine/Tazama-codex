@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import {
   ALL_SERVERS, PROVIDER_CATEGORIES, getEmbedUrl, getServerIndex,
-  VIDSRC_SERVERS, EMBED_SERVERS, LYNX_SERVERS, DIRECT_SERVERS, MULTI_SERVERS,
+  VIDSRC_SERVERS, EMBED_SERVERS, LYNX_SERVERS, DIRECT_SERVERS, MULTI_SERVERS, ANIME_FR_SERVERS,
 } from '@/utils/servers'
 import { useWatchHistory } from '@/composables/useWatchHistory'
 
@@ -105,6 +105,7 @@ const catServers = (categoryId) => {
     lynx:   LYNX_SERVERS,
     direct: DIRECT_SERVERS,
     multi:  MULTI_SERVERS,
+    anime:  ANIME_FR_SERVERS,
   }
   return filteredByAudio(map[categoryId] || [])
 }
