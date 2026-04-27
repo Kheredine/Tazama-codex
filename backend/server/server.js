@@ -140,7 +140,7 @@ Return JSON:
 }`
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: systemPrompt },
@@ -185,7 +185,7 @@ app.post("/api/discover", async (req, res) => {
       : ''
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: "You are a personalized entertainment curator. Return valid JSON only." },
