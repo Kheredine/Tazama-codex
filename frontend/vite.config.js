@@ -38,6 +38,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        // SPA: serve cached index.html for any navigation request when offline
+        navigateFallback: '/index.html',
+        // Don't intercept /offline.html or /api/* with the SPA fallback
+        navigateFallbackDenylist: [/^\/offline\.html$/, /^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
