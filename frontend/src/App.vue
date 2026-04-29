@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import SideBar from './components/SideBar.vue'
 import TopBar from './components/TopBar.vue'
+import PWAInstallBanner from './components/PWAInstallBanner.vue'
 
 const sidebarOpen = ref(false)
 const route = useRoute()
@@ -49,4 +50,7 @@ const isPublicRoute = computed(() => route.meta?.public)
     </template>
 
   </div>
+
+  <!-- PWA install banner – rendered above all layout layers -->
+  <PWAInstallBanner />
 </template>

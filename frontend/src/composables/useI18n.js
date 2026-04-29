@@ -150,6 +150,15 @@ const translations = {
     notificationsTitle: 'Notifications',
     noNotifications: 'No notifications yet',
     markAllRead: 'Mark all as read',
+    // PWA install banner
+    pwaTitle: 'Install Tazama',
+    pwaDesc: 'Add to your home screen for a faster, app-like experience — no browser chrome.',
+    pwaInstallBtn: 'Install',
+    pwaDismissBtn: 'Not now',
+    pwaIOSDesc: 'Tap the',
+    pwaIOSShare: 'Share',
+    pwaIOSStep: 'button, then "Add to Home Screen".',
+    pwaIOSGot: 'Got it',
   },
   fr: {
     appName: 'Tazama',
@@ -298,6 +307,15 @@ const translations = {
     notificationsTitle: 'Notifications',
     noNotifications: 'Aucune notification pour le moment',
     markAllRead: 'Tout marquer comme lu',
+    // PWA install banner
+    pwaTitle: 'Installer Tazama',
+    pwaDesc: "Ajoutez sur votre écran d'accueil pour une expérience rapide et native.",
+    pwaInstallBtn: 'Installer',
+    pwaDismissBtn: 'Plus tard',
+    pwaIOSDesc: 'Appuyez sur',
+    pwaIOSShare: 'Partager',
+    pwaIOSStep: 'puis "Sur l\'écran d\'accueil".',
+    pwaIOSGot: 'Compris',
   },
 }
 
